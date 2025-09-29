@@ -7,6 +7,7 @@ import {
   VoiceSettings, 
   AccessibilityPreferences,
   ScribeSession,
+  Scribe,
   AIMemory 
 } from '@/types'
 
@@ -188,11 +189,11 @@ export const useAccessibilityStore = create<AccessibilityStore>()(
 // Scribe store
 interface ScribeStore {
   upcomingSessions: ScribeSession[]
-  availableScribes: any[]
+  availableScribes: Scribe[]
   currentScribeSession: ScribeSession | null
   isSearching: boolean
   setUpcomingSessions: (sessions: ScribeSession[]) => void
-  setAvailableScribes: (scribes: any[]) => void
+  setAvailableScribes: (scribes: Scribe[]) => void
   setCurrentScribeSession: (session: ScribeSession | null) => void
   setSearching: (searching: boolean) => void
   bookScribe: (scribeId: string, subject: string, scheduledTime: Date) => void

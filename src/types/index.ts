@@ -55,7 +55,7 @@ export interface Interaction {
   type: 'question' | 'answer' | 'explanation' | 'visualization' | 'voice'
   content: string
   timestamp: Date
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface AIMemory {
@@ -139,11 +139,11 @@ export interface CerebrasResponse {
     completionTokens: number
     totalTokens: number
   }
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // API response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string
@@ -162,7 +162,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
   content: string
   timestamp: Date
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface VoiceSettings {

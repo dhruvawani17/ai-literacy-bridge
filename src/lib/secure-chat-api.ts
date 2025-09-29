@@ -1,5 +1,21 @@
 // Client-side API helper for secure Cerebras calls
 
+export interface CerebrasUsage {
+  promptTokens: number
+  completionTokens: number
+  totalTokens: number
+}
+
+export interface CerebrasMetadata {
+  model: string
+  temperature: number
+  maxTokens: number
+  timestamp: string
+  subject?: string
+  gradeLevel?: number
+  error?: boolean
+}
+
 export interface ChatAPIRequest {
   message: string
   subject?: string
@@ -12,16 +28,8 @@ export interface ChatAPIResponse {
   content: string
   fallback?: boolean
   error?: string
-  usage?: {
-    promptTokens: number
-    completionTokens: number
-    totalTokens: number
-  }
-  metadata?: {
-    model: string
-    subject: string
-    gradeLevel: number
-  }
+  usage?: CerebrasUsage
+  metadata?: CerebrasMetadata
 }
 
 export class SecureChatAPI {
@@ -85,7 +93,7 @@ export class SecureChatAPI {
       systemPrompt?: string
       context?: string[]
     }
-  ): Promise<{ content: string; usage?: any; metadata?: any }> {
+  ): Promise<{ content: string; usage?: CerebrasUsage; metadata?: CerebrasMetadata }> {
     try {
       const content = await this.generateEducationalContent(
         prompt,
@@ -98,14 +106,27 @@ export class SecureChatAPI {
       return {
         content,
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        metadata: { model: 'cerebras-secure', subject: 'general' }
+        metadata: { 
+          model: 'cerebras-secure', 
+          subject: 'general',
+          temperature: 0.7,
+          maxTokens: 1000,
+          timestamp: new Date().toISOString()
+        }
       }
     } catch (error) {
       console.error('Error in generateResponse:', error)
       return {
         content: "I'm experiencing some technical difficulties. Could you please try asking your question again?",
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        metadata: { model: 'fallback', subject: 'general', error: true }
+        metadata: { 
+          model: 'fallback', 
+          subject: 'general', 
+          error: true,
+          temperature: 0.7,
+          maxTokens: 1000,
+          timestamp: new Date().toISOString()
+        }
       }
     }
   }
