@@ -18,6 +18,8 @@ import {
 } from 'lucide-react'
 import { useUserStore, useLearningStore, useScribeStore, useAccessibilityStore } from '@/store'
 import { AITutorChat } from './AITutorChat'
+import { AIVoiceTutor } from './AIVoiceTutor'
+import { LiveKitVoiceTutor } from './LiveKitVoiceTutor'
 import { ScribeMatcher } from './ScribeMatcher'
 import { VisualizationEngine } from './VisualizationEngine'
 import { cn } from '@/lib/utils'
@@ -73,6 +75,8 @@ export function StudentDashboard() {
   const [showChat, setShowChat] = useState(false)
   const [showScribeMatcher, setShowScribeMatcher] = useState(false)
   const [showVisualization, setShowVisualization] = useState(false)
+  const [showVoiceTutor, setShowVoiceTutor] = useState(false)
+  const [showLiveKitVoiceTutor, setShowLiveKitVoiceTutor] = useState(false)
 
   const handleStartLearning = (subjectId: string, topic: string) => {
     setSelectedSubject(subjectId)
@@ -105,6 +109,22 @@ export function StudentDashboard() {
     setShowVisualization(false)
     setSelectedSubject(null)
     setSelectedTopic(null)
+  }
+
+  const handleOpenVoiceTutor = () => {
+    setShowVoiceTutor(true)
+  }
+
+  const handleCloseVoiceTutor = () => {
+    setShowVoiceTutor(false)
+  }
+
+  const handleOpenLiveKitVoiceTutor = () => {
+    setShowLiveKitVoiceTutor(true)
+  }
+
+  const handleCloseLiveKitVoiceTutor = () => {
+    setShowLiveKitVoiceTutor(false)
   }
 
   const getProgressColor = (progress: number) => {
@@ -142,6 +162,44 @@ export function StudentDashboard() {
 
   if (showScribeMatcher) {
     return <ScribeMatcher onClose={handleCloseScribeMatcher} />
+  }
+
+  if (showVoiceTutor) {
+    return (
+      <div className="min-h-screen p-6 bg-background">
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Voice AI Tutor</h1>
+            <Button variant="outline" onClick={handleCloseVoiceTutor}>
+              Back to Dashboard
+            </Button>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Talk naturally with your AI tutor using voice commands
+          </p>
+        </div>
+        <AIVoiceTutor />
+      </div>
+    )
+  }
+
+  if (showLiveKitVoiceTutor) {
+    return (
+      <div className="min-h-screen p-6 bg-background">
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">LiveKit Voice AI Tutor</h1>
+            <Button variant="outline" onClick={handleCloseLiveKitVoiceTutor}>
+              Back to Dashboard
+            </Button>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Real-time voice interaction with low-latency AI tutoring
+          </p>
+        </div>
+        <LiveKitVoiceTutor />
+      </div>
+    )
   }
 
   if (showVisualization && selectedSubject && selectedTopic) {
@@ -408,10 +466,54 @@ export function StudentDashboard() {
             </Button>
           </div>
 
+          {/* Voice AI Tutor */}
+          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 shadow-sm border border-purple-200">
+            <h3 className="font-semibold mb-2 flex items-center text-purple-800">
+              <Mic className="h-5 w-5 mr-2" />
+              Voice AI Tutor
+            </h3>
+            <p className="text-sm text-purple-700 mb-4">
+              Real-time voice interaction with your AI tutor. Perfect for accessibility and hands-free learning!
+            </p>
+            <div className="space-y-2">
+              <Button 
+                onClick={handleOpenLiveKitVoiceTutor}
+                className="w-full bg-purple-600 hover:bg-purple-700"
+              >
+                <Volume2 className="h-4 w-4 mr-2" />
+                LiveKit Voice Session (Recommended)
+              </Button>
+              <Button 
+                onClick={handleOpenVoiceTutor}
+                variant="outline"
+                className="w-full"
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                Basic Voice Session
+              </Button>
+            </div>
+          </div>
+
           {/* Accessibility Quick Actions */}
           <div className="bg-card rounded-lg p-6 shadow-sm border">
             <h3 className="font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start"
+                onClick={handleOpenLiveKitVoiceTutor}
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                LiveKit Voice Tutor
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start"
+                onClick={handleOpenVoiceTutor}
+              >
+                <Volume2 className="h-4 w-4 mr-2" />
+                Basic Voice Tutor
+              </Button>
               <Button variant="ghost" className="w-full justify-start">
                 <Volume2 className="h-4 w-4 mr-2" />
                 Voice Settings

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useLearningStore, useAccessibilityStore } from '@/store'
 import { getCerebrasClient } from '@/lib/cerebras'
+import { getSecureChatAPI } from '@/lib/secure-chat-api'
 import { getVoiceManager, getAccessibilityManager } from '@/lib/accessibility'
 import { ChatMessage } from '@/types'
 import { cn } from '@/lib/utils'
@@ -101,41 +102,52 @@ export function AITutorChat({ subject, topic, onProgress }: AITutorChatProps) {
     setIsLoading(true)
 
     try {
-      const cerebras = getCerebrasClient()
-      
-      // Build context from chat history and AI memory
-      const context = chatHistory.map(msg => 
-        `${msg.role}: ${msg.content}`
-      ).slice(-10) // Last 10 messages for context
+      // Use secure API with fallback to Cerebras client
+      let response: string
+      try {
+        const chatAPI = getSecureChatAPI()
+        
+        // Build context from chat history and AI memory
+        const context = chatHistory.map(msg => 
+          `${msg.role}: ${msg.content}`
+        ).slice(-10) // Last 10 messages for context
 
-      // Add accessibility context
-      const accessibilityContext = []
-      if (accessibilityPreferences.screenReader) {
-        accessibilityContext.push('User uses screen reader - provide clear, structured responses')
-      }
-      if (accessibilityPreferences.audioDescriptions) {
-        accessibilityContext.push('User needs audio descriptions for visual content')
-      }
-      if (accessibilityPreferences.brailleSupport) {
-        accessibilityContext.push('User may use Braille - avoid complex visual formatting')
-      }
+        response = await chatAPI.generateEducationalContent(
+          userMessage.content,
+          subject,
+          currentSession?.studentId ? 8 : 8, // Default grade 8
+          voiceSettings.language,
+          context
+        )
+      } catch (apiError) {
+        console.log('Secure API failed, using Cerebras client:', apiError)
+        const cerebras = getCerebrasClient()
+        
+        // Build context from chat history and AI memory
+        const context = chatHistory.map(msg => 
+          `${msg.role}: ${msg.content}`
+        ).slice(-10) // Last 10 messages for context
 
-      const systemPrompt = `You are an expert AI tutor specializing in ${subject}, currently teaching ${topic}. 
-      ${accessibilityContext.length > 0 ? `Accessibility needs: ${accessibilityContext.join(', ')}. ` : ''}
-      Student's learning pattern: ${aiMemory?.learningPattern || 'Not yet determined'}
-      Student's strengths: ${aiMemory?.studentStrengths.join(', ') || 'To be discovered'}
-      Student's weaknesses: ${aiMemory?.weaknesses.join(', ') || 'To be discovered'}
-      
-      Provide personalized, encouraging responses. Break down complex concepts into digestible parts.
-      If explaining visual concepts, always include detailed descriptions for accessibility.`
+        // Add accessibility context
+        const accessibilityContext = []
+        if (accessibilityPreferences.screenReader) {
+          accessibilityContext.push('User uses screen reader - provide clear, structured responses')
+        }
+        if (accessibilityPreferences.audioDescriptions) {
+          accessibilityContext.push('User needs audio descriptions for visual content')
+        }
+        if (accessibilityPreferences.brailleSupport) {
+          accessibilityContext.push('User may use Braille - avoid complex visual formatting')
+        }
 
-      const response = await cerebras.generateEducationalContent(
-        userMessage.content,
-        subject,
-        currentSession?.studentId ? 8 : 8, // Default grade 8
-        voiceSettings.language,
-        accessibilityContext
-      )
+        response = await cerebras.generateEducationalContent(
+          userMessage.content,
+          subject,
+          currentSession?.studentId ? 8 : 8, // Default grade 8
+          voiceSettings.language,
+          accessibilityContext
+        )
+      }
 
       const aiResponse: ChatMessage = {
         id: generateUniqueId(),
@@ -145,7 +157,9 @@ export function AITutorChat({ subject, topic, onProgress }: AITutorChatProps) {
         metadata: { 
           subject, 
           topic,
-          accessibilityOptimized: accessibilityContext.length > 0
+          accessibilityOptimized: accessibilityPreferences.screenReader || 
+                                  accessibilityPreferences.audioDescriptions ||
+                                  accessibilityPreferences.brailleSupport
         }
       }
 

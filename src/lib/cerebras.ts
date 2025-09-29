@@ -18,22 +18,97 @@ export class CerebrasClient {
     }
   ): Promise<CerebrasResponse> {
     try {
-      // Use the direct Llama client which handles all fallbacks internally
-      const response = await directLlamaClient.generateResponse(prompt, options?.systemPrompt)
-      
-      return {
-        content: response.content,
-        usage: response.usage,
-        metadata: response.metadata
-      }
+      // First try the actual Cerebras API
+      const response = await this.callCerebrasAPI(prompt, options)
+      return response
     } catch (error) {
-      console.error('Direct Llama client failed:', error)
+      console.error('Cerebras API failed, falling back to direct Llama:', error)
       
-      // Final emergency fallback
-      return {
-        content: `I'm here to help you learn! While I'm having some technical difficulties, I can still provide guidance. You asked about: "${prompt}". Let me know what specific aspect you'd like to focus on, and I'll do my best to help you understand it step by step.`,
-        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        metadata: { model: 'emergency-fallback', finishReason: 'stop' }
+      try {
+        // Fallback to direct Llama client
+        const response = await directLlamaClient.generateResponse(prompt, options?.systemPrompt)
+        
+        return {
+          content: response.content,
+          usage: response.usage,
+          metadata: response.metadata
+        }
+      } catch (fallbackError) {
+        console.error('Direct Llama client also failed:', fallbackError)
+        
+        // Final emergency fallback
+        return {
+          content: `I'm here to help you learn! While I'm having some technical difficulties, I can still provide guidance. You asked about: "${prompt}". Let me know what specific aspect you'd like to focus on, and I'll do my best to help you understand it step by step.`,
+          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          metadata: { model: 'emergency-fallback', finishReason: 'stop' }
+        }
+      }
+    }
+  }
+
+  private async callCerebrasAPI(
+    prompt: string,
+    options?: {
+      maxTokens?: number
+      temperature?: number
+      systemPrompt?: string
+      context?: string[]
+    }
+  ): Promise<CerebrasResponse> {
+    const messages = []
+    
+    if (options?.systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: options.systemPrompt
+      })
+    }
+    
+    if (options?.context && options.context.length > 0) {
+      messages.push({
+        role: 'system',
+        content: `Context: ${options.context.join(' ')}`
+      })
+    }
+    
+    messages.push({
+      role: 'user',
+      content: prompt
+    })
+
+    const requestBody = {
+      model: this.config.model,
+      messages,
+      max_tokens: options?.maxTokens || this.config.maxTokens,
+      temperature: options?.temperature || this.config.temperature,
+      stream: false
+    }
+
+    const response = await fetch(this.config.endpoint + '/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+      throw new Error(`Cerebras API error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    
+    return {
+      content: data.choices[0].message.content,
+      usage: {
+        promptTokens: data.usage?.prompt_tokens || 0,
+        completionTokens: data.usage?.completion_tokens || 0,
+        totalTokens: data.usage?.total_tokens || 0
+      },
+      metadata: {
+        model: data.model || this.config.model,
+        finishReason: data.choices[0].finish_reason || 'stop'
       }
     }
   }
@@ -45,12 +120,33 @@ export class CerebrasClient {
     language: string = 'en',
     accessibilityNeeds: string[] = []
   ): Promise<string> {
+    const systemPrompt = `You are an expert AI tutor specializing in ${subject} for grade ${grade} students. 
+    Provide clear, engaging, and age-appropriate explanations. 
+    ${accessibilityNeeds.length > 0 ? `Consider these accessibility needs: ${accessibilityNeeds.join(', ')}` : ''}
+    Use simple language, examples, and encourage questions.`
+
+    const prompt = `Please explain "${topic}" in ${subject} for a grade ${grade} student. 
+    Make it interactive and engaging, and end with a question to check understanding.`
+
     try {
-      // Use the direct Llama client for educational content
-      return await directLlamaClient.generateEducationalContent(topic, subject, grade, language)
+      // First try Cerebras API
+      const response = await this.generateResponse(prompt, {
+        systemPrompt,
+        maxTokens: 800,
+        temperature: 0.7
+      })
+      
+      return response.content
     } catch (error) {
-      console.error('Educational content generation failed:', error)
-      return this.generateOfflineEducationalContent(topic, subject, grade)
+      console.error('Cerebras educational content generation failed:', error)
+      
+      try {
+        // Fallback to direct Llama client
+        return await directLlamaClient.generateEducationalContent(topic, subject, grade, language)
+      } catch (fallbackError) {
+        console.error('Direct Llama also failed:', fallbackError)
+        return this.generateOfflineEducationalContent(topic, subject, grade)
+      }
     }
   }
 
@@ -127,9 +223,9 @@ I'm here to help guide your learning journey, even when offline. What specific p
 // Create and export a singleton instance
 export const getCerebrasClient = () => {
   const config: CerebrasConfig = {
-    apiKey: 'direct-llama', // Not used in direct mode
-    endpoint: 'direct', // Using direct Llama client
-    model: 'llama3.1:8b',
+    apiKey: process.env.CEREBRAS_API_KEY || 'demo-key',
+    endpoint: process.env.CEREBRAS_ENDPOINT || 'https://api.cerebras.ai/v1',
+    model: process.env.CEREBRAS_MODEL || 'llama3.1-8b',
     maxTokens: 1000,
     temperature: 0.7
   }
