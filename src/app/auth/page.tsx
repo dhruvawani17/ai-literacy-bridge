@@ -184,10 +184,10 @@ export default function AuthPage() {
           {/* Right Side - Firebase Auth */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border">
             <div className="mb-8 text-center">
-              <h3 className="text-2xl font-bold mb-2">
+              <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
                 Welcome to AI Literacy Bridge
               </h3>
-              <p className="text-muted-foreground">
+              <p className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                 {isLogin ? 'Sign in to your account' : 'Create your account'}
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function AuthPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required={!isLogin}
-                        className="pl-10"
+                        className="pl-10 text-gray-900 placeholder:text-gray-500"
                       />
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export default function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="pl-10"
+                      className="pl-10 text-gray-900 placeholder:text-gray-500"
                     />
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function AuthPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="pl-10"
+                      className="pl-10 text-gray-900 placeholder:text-gray-500"
                     />
                   </div>
                 </div>

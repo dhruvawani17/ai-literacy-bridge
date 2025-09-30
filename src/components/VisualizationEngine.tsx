@@ -350,7 +350,7 @@ animate();
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Interactive Learning Visualization</h1>
-        <p className="text-muted-foreground">
+        <p className="text-blue-700">
           AI-generated educational visualization for <strong>{topic}</strong> in {subject}
         </p>
       </div>
@@ -454,7 +454,7 @@ animate();
           />
           {!generatedCode && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-blue-700">
                 <Code className="h-12 w-12 mx-auto mb-2" />
                 <p>Visualization will appear here</p>
               </div>

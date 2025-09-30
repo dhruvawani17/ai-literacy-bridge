@@ -273,7 +273,7 @@ export function AITutorChat({ subject, topic, onProgress }: AITutorChatProps) {
               <div className="whitespace-pre-wrap">{msg.content}</div>
               <div className={cn(
                 "text-xs mt-2 opacity-70",
-                msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                msg.role === 'user' ? 'text-primary-foreground/70' : 'text-blue-700'
               )}>
                 {msg.timestamp.toLocaleTimeString()}
               </div>
@@ -334,7 +334,7 @@ export function AITutorChat({ subject, topic, onProgress }: AITutorChatProps) {
         </div>
         
         {isListening && (
-          <div className="mt-2 text-sm text-muted-foreground flex items-center">
+          <div className="mt-2 text-sm text-blue-700 flex items-center">
             <div className="animate-pulse flex space-x-1">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>

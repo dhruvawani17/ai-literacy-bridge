@@ -152,6 +152,7 @@ export function LiveKitVoiceTutor() {
     recognition.lang = 'en-US'
 
     recognition.onstart = () => {
+      console.log('🎤 Speech recognition started')
       setIsListening(true)
       setCurrentTranscript('')
     }
@@ -172,20 +173,28 @@ export function LiveKitVoiceTutor() {
       setCurrentTranscript(finalTranscript + interimTranscript)
 
       if (finalTranscript.trim()) {
+        console.log('🗣️ Final transcript received:', finalTranscript.trim())
+        console.log('🎤 Keeping microphone active for continuous conversation')
+        
+        // DON'T stop recognition - keep it running for continuous conversation
+        // Just clear the current transcript display
+        setCurrentTranscript('')
+        
+        // Process the message while keeping mic active
         handleUserMessage(finalTranscript.trim())
-        recognition.stop()
       }
     }
 
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
       setIsListening(false)
-      if (event.error !== 'aborted') {
+      if (event.error !== 'aborted' && event.error !== 'no-speech') {
         addSystemMessage(`Speech recognition error: ${event.error}. Please try again.`)
       }
     }
 
     recognition.onend = () => {
+      console.log('🔇 Speech recognition ended')
       setIsListening(false)
       setCurrentTranscript('')
     }
@@ -299,12 +308,60 @@ export function LiveKitVoiceTutor() {
   }
 
   // Start listening for voice input
-  const startListening = () => {
-    if (!isConnected || !speechRecognition.current || isListening) return
+  const startListening = useCallback(() => {
+    if (!isConnected) {
+      console.log('❌ Cannot start listening: not connected')
+      return
+    }
 
+    console.log('🎯 Starting listening process...')
+    
+    // Stop any current speech
     stopSpeaking()
-    speechRecognition.current.start()
-  }
+    
+    // Clean up any existing recognition
+    if (speechRecognition.current) {
+      try {
+        speechRecognition.current.stop()
+      } catch (e) {
+        console.log('Previous recognition cleanup:', e)
+      }
+    }
+    
+    // Reset state
+    setIsListening(false)
+    setCurrentTranscript('')
+    
+    // Create new recognition instance
+    const newRecognition = setupSpeechRecognition()
+    if (!newRecognition) {
+      console.log('❌ Speech recognition not supported')
+      return
+    }
+    
+    speechRecognition.current = newRecognition
+    
+    // Start recognition with a small delay to ensure clean state
+    setTimeout(() => {
+      try {
+        console.log('🚀 Starting speech recognition...')
+        speechRecognition.current?.start()
+      } catch (error) {
+        console.error('❌ Error starting speech recognition:', error)
+        setIsListening(false)
+        
+        // If we get an error, try once more after a longer delay
+        setTimeout(() => {
+          try {
+            console.log('🔄 Retrying speech recognition...')
+            speechRecognition.current?.start()
+          } catch (retryError) {
+            console.error('❌ Retry failed:', retryError)
+          }
+        }, 1000)
+      }
+    }, 150)
+  }, [isConnected, setupSpeechRecognition])
 
   // Stop listening
   const stopListening = () => {
@@ -342,24 +399,21 @@ export function LiveKitVoiceTutor() {
       }
     }
 
-    utterance.onstart = () => setIsSpeaking(true)
-    utterance.onend = () => {
-      setIsSpeaking(false)
-      // Auto-restart listening after speaking if connected and auto-listen is enabled
-      if (isConnected && autoListen && !isProcessing) {
-        setTimeout(() => {
-          console.log('Auto-starting listening after speech ended')
-          startListening()
-        }, 500) // Small delay to ensure speech has fully ended
-      }
+    utterance.onstart = () => {
+      console.log('🔊 AI started speaking')
+      setIsSpeaking(true)
     }
+    
+    utterance.onend = () => {
+      console.log('✅ AI finished speaking')
+      setIsSpeaking(false)
+      console.log('🎤 Microphone remains active for continuous conversation')
+    }
+    
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event.error)
       setIsSpeaking(false)
-      // Still try to restart listening even if speech failed
-      if (isConnected && autoListen) {
-        setTimeout(() => startListening(), 500)
-      }
+      console.log('🎤 Microphone remains active despite speech error')
     }
 
     speechSynthesis.current.speak(utterance)
@@ -615,8 +669,8 @@ export function LiveKitVoiceTutor() {
         {/* Messages Display */}
         <div className="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
           {messages.length === 0 ? (
-            <div className="text-center text-gray-500 mt-20">
-              <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <div className="text-center text-purple-600 mt-20">
+              <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-75" />
               <p>Connect to start your voice learning session</p>
             </div>
           ) : (
@@ -632,7 +686,7 @@ export function LiveKitVoiceTutor() {
                         ? 'bg-blue-500 text-white'
                         : message.type === 'system'
                         ? 'bg-purple-100 border border-purple-300 text-purple-800'
-                        : 'bg-white border shadow-sm text-gray-800'
+                        : 'bg-white border shadow-sm text-blue-800'
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
@@ -658,7 +712,7 @@ export function LiveKitVoiceTutor() {
                   <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-white border shadow-sm">
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <p className="text-sm text-gray-600">AI is thinking...</p>
+                      <p className="text-sm text-blue-700">AI is thinking...</p>
                     </div>
                   </div>
                 </div>
@@ -766,24 +820,33 @@ export function LiveKitVoiceTutor() {
         </div>
 
         {/* Status Display */}
-        <div className="mt-4 text-center text-sm text-gray-600">
+        <div className="mt-4 text-center">
           {!isConnected && (
-            <p>Connect to voice session to start learning with real-time voice interaction</p>
-          )}
-          {isConnected && isListening && (
-            <p className="text-purple-600 font-medium">🎤 Listening for your question...</p>
-          )}
-          {isConnected && isSpeaking && (
-            <p className="text-green-600 font-medium">🔊 Speaking response...</p>
-          )}
-          {isConnected && isProcessing && (
-            <p className="text-orange-600 font-medium">🤔 AI is processing your question...</p>
+            <p className="text-sm text-blue-700">Connect to voice session to start learning with real-time voice interaction</p>
           )}
           {isConnected && !isListening && !isSpeaking && !isProcessing && (
-            <p className="text-purple-600">
-              Ready for voice interaction! 
-              {autoListen ? ' Speak anytime - I\'ll listen automatically after responding.' : ' Press the microphone or use spacebar to ask questions.'}
-            </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p className="text-green-700 font-medium">⏸️ Ready to Start</p>
+              <p className="text-sm text-blue-700">Click "Start Listening" for continuous conversation mode</p>
+            </div>
+          )}
+          {isConnected && isListening && !isSpeaking && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-blue-700 font-medium animate-pulse">🎤 Continuous Listening Active</p>
+              <p className="text-sm text-blue-600">Speak anytime - microphone stays on for seamless conversation</p>
+            </div>
+          )}
+          {isConnected && isListening && isSpeaking && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-green-700 font-medium">🔊 AI Speaking + Mic Active</p>
+              <p className="text-sm text-green-600">Continue speaking when I finish - no need to click anything!</p>
+            </div>
+          )}
+          {isConnected && isListening && isProcessing && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <p className="text-orange-700 font-medium">🤔 Processing + Mic Active</p>
+              <p className="text-sm text-orange-600">Analyzing your question while staying ready for more input</p>
+            </div>
           )}
         </div>
 

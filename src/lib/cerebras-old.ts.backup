@@ -183,9 +183,9 @@ export class CerebrasClient {
       english: `In English, ${topic} helps us communicate more effectively and express our thoughts clearly.`,
       history: `Understanding ${topic} in history helps us learn from the past and make sense of our world today.`,
       geography: `${topic} in geography shows us how our world is connected and how places influence each other.`
-    }
+    };
 
-    const baseContent = subjectMap[subject.toLowerCase()] || `Let's learn about ${topic} together!`
+    const baseContent = subjectMap[subject.toLowerCase()] || `Let's learn about ${topic} together!`;
     
     return `${baseContent}
 
@@ -197,14 +197,15 @@ export class CerebrasClient {
     - Practice with examples and ask questions
     - Don't hesitate to review the basics if needed
     
-  private generateOfflineEducationalContent(topic: string, subject: string, grade: number): string {
-    const subjectMap: { [key: string]: string } = {
-      mathematics: `Let's explore ${topic} in mathematics! This concept is fundamental to understanding numbers and problem-solving.`,
-      science: `${topic} is a fascinating area of science! Let's discover how this concept works in our daily lives.`,
-      english: `In English, ${topic} helps us communicate more effectively and express our thoughts clearly.`,
-      history: `Understanding ${topic} in history helps us learn from the past and make sense of our world today.`,
+    💡 **Study Tips:**
+    - Use books, notes, or other offline resources
+    - Practice problems if available
+    - Draw diagrams or make charts to visualize concepts
+    - Teach someone else what you've learned
+    `;
+  }
       geography: `${topic} in geography shows us how our world is connected and how places influence each other.`
-    }
+    };
 
     const baseContent = subjectMap[subject.toLowerCase()] || `Let's learn about ${topic} together!`
     
@@ -224,8 +225,7 @@ export class CerebrasClient {
     - Look for patterns and connections
     - Take breaks when you feel overwhelmed
     
-    I'm here to help guide your learning journey, even when offline. What specific part of ${topic} would you like to focus on first?`
-  }
+    I'm here to help guide your learning journey, even when offline. What specific part of ${topic} would you like to focus on first?`;
   }
 
   async generateVisualizationCode(

@@ -158,7 +158,7 @@ export function ScribeMatcher({ onScribeSelected, onClose }: ScribeMatcherProps)
         key={i} 
         className={cn(
           "h-4 w-4", 
-          i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+          i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-yellow-400"
         )} 
       />
     ))
