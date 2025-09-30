@@ -41,6 +41,11 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      setIsLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       
@@ -89,6 +94,9 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
 
   const signInWithGoogle = async () => {
     try {
+      if (!auth || !googleProvider) {
+        throw new Error('Firebase auth not initialized');
+      }
       setIsLoading(true);
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
@@ -99,6 +107,9 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
+      if (!auth) {
+        throw new Error('Firebase auth not initialized');
+      }
       setIsLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
@@ -110,6 +121,9 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
 
   const signUpWithEmail = async (email: string, password: string, name: string) => {
     try {
+      if (!auth) {
+        throw new Error('Firebase auth not initialized');
+      }
       setIsLoading(true);
       const result = await createUserWithEmailAndPassword(auth, email, password);
       // You could update the user profile here with the name
@@ -123,6 +137,9 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
 
   const logout = async () => {
     try {
+      if (!auth) {
+        throw new Error('Firebase auth not initialized');
+      }
       await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
