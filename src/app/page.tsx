@@ -645,8 +645,8 @@ function LandingPage() {
             </div>
 
             {/* Demo Video Placeholder */}
-            <div className={`relative max-w-4xl mx-auto transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <div className="aspect-video bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-2xl overflow-hidden relative group cursor-pointer transform hover:scale-105 transition-all duration-500">
+            <div className="relative max-w-4xl mx-auto transition-all duration-1000 delay-700 opacity-100 translate-y-0">
+              <div className="h-48 sm:h-56 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-2xl overflow-hidden relative group cursor-pointer transform hover:scale-105 transition-all duration-500">
                 {/* Animated background pattern */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-200 to-purple-200 animate-pulse"></div>
