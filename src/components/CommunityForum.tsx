@@ -72,44 +72,116 @@ export function CommunityForum({ onClose }: { onClose?: () => void }) {
     category: 'general' as ForumPost['category'],
     tags: [] as string[]
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false) // Changed to false to show posts immediately
+
+  // Sample posts for demonstration
+  const samplePosts: ForumPost[] = [
+    {
+      id: '1',
+      title: 'My JEE Main Success Story with AI Literacy Bridge',
+      content: 'I was struggling with my JEE preparation due to visual impairment, but finding the right scribe through this platform changed everything. The AI matching was spot-on, and my scribe was incredibly patient and knowledgeable. Scored 94% in JEE Main! Thank you to the entire team and my amazing scribe Priya.',
+      authorId: 'user1',
+      authorName: 'Rahul Kumar',
+      authorAvatar: '',
+      category: 'success-stories',
+      tags: ['jee', 'success', 'motivation', 'engineering'],
+      createdAt: new Date('2024-10-01'),
+      updatedAt: new Date('2024-10-01'),
+      likes: 24,
+      replies: 8,
+      isSticky: false,
+      isAnnouncement: false
+    },
+    {
+      id: '2',
+      title: 'Tips for Effective Voice-Based Learning',
+      content: 'After using the voice features extensively, here are my top tips: 1) Use headphones for better focus, 2) Take breaks every 45 minutes, 3) Practice dictation regularly, 4) Combine voice with tactile methods. The AI voice assistant has been a game-changer for my studies!',
+      authorId: 'user2',
+      authorName: 'Ananya Sharma',
+      authorAvatar: '',
+      category: 'study-tips',
+      tags: ['voice-learning', 'accessibility', 'tips', 'productivity'],
+      createdAt: new Date('2024-09-28'),
+      updatedAt: new Date('2024-09-28'),
+      likes: 31,
+      replies: 12,
+      isSticky: false,
+      isAnnouncement: false
+    },
+    {
+      id: '3',
+      title: 'NEET Preparation Group Study Session',
+      content: 'Hi everyone! I\'m organizing a virtual study group for NEET aspirants. We can share diagrams and notes through our real-time collaboration tools. Anyone interested in joining? We can meet every Saturday evening. DM me if you\'re preparing for NEET 2025!',
+      authorId: 'user3',
+      authorName: 'Vikram Singh',
+      authorAvatar: '',
+      category: 'exam-prep',
+      tags: ['neet', 'group-study', 'collaboration', 'medical'],
+      createdAt: new Date('2024-09-25'),
+      updatedAt: new Date('2024-09-25'),
+      likes: 18,
+      replies: 15,
+      isSticky: false,
+      isAnnouncement: false
+    },
+    {
+      id: '4',
+      title: 'Screen Reader Compatibility Questions',
+      content: 'I\'ve been using JAWS with the platform and it works great, but I\'m having trouble with some of the interactive features. Has anyone else experienced this? Are there specific keyboard shortcuts I should know about? Any tips would be greatly appreciated!',
+      authorId: 'user4',
+      authorName: 'Meera Patel',
+      authorAvatar: '',
+      category: 'accessibility',
+      tags: ['screen-reader', 'jaws', 'accessibility', 'navigation'],
+      createdAt: new Date('2024-09-22'),
+      updatedAt: new Date('2024-09-22'),
+      likes: 12,
+      replies: 6,
+      isSticky: false,
+      isAnnouncement: false
+    },
+    {
+      id: '5',
+      title: 'How I Balanced College and Volunteering as a Scribe',
+      content: 'Being a volunteer scribe while pursuing my engineering degree has been incredibly rewarding. The platform makes it easy to schedule sessions around my classes. I\'ve helped 15 students so far, and each success story motivates me more. If you\'re considering volunteering, don\'t hesitate - it\'s worth every minute!',
+      authorId: 'user5',
+      authorName: 'Arjun Reddy',
+      authorAvatar: '',
+      category: 'general',
+      tags: ['volunteering', 'work-life-balance', 'motivation', 'community'],
+      createdAt: new Date('2024-09-20'),
+      updatedAt: new Date('2024-09-20'),
+      likes: 27,
+      replies: 9,
+      isSticky: false,
+      isAnnouncement: false
+    },
+    {
+      id: '6',
+      title: 'Braille Study Materials and Resources',
+      content: 'I\'ve compiled a list of excellent Braille resources for competitive exam preparation. Including: 1) NCERT Braille books, 2) Past year papers in Braille format, 3) Online Braille converters, 4) Study groups on social media. Happy to share specific links and recommendations!',
+      authorId: 'user6',
+      authorName: 'Kavita Joshi',
+      authorAvatar: '',
+      category: 'study-tips',
+      tags: ['braille', 'resources', 'materials', 'competitive-exams'],
+      createdAt: new Date('2024-09-18'),
+      updatedAt: new Date('2024-09-18'),
+      likes: 22,
+      replies: 11,
+      isSticky: false,
+      isAnnouncement: false
+    }
+  ]
 
   useEffect(() => {
-    loadPosts()
-  }, [selectedCategory])
-
-  const loadPosts = async () => {
-    if (!db) return
+    // Simulate loading and then show sample posts
     setIsLoading(true)
-    try {
-      let q = query(collection(db, 'forum-posts'), orderBy('createdAt', 'desc'), limit(50))
-
-      if (selectedCategory !== 'all') {
-        q = query(collection(db, 'forum-posts'),
-          where('category', '==', selectedCategory),
-          orderBy('createdAt', 'desc'),
-          limit(50)
-        )
-      }
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const postsData: ForumPost[] = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate()
-        })) as ForumPost[]
-
-        setPosts(postsData)
-        setIsLoading(false)
-      })
-
-      return unsubscribe
-    } catch (error) {
-      console.error('Error loading posts:', error)
+    setTimeout(() => {
+      setPosts(samplePosts)
       setIsLoading(false)
-    }
-  }
+    }, 500)
+  }, [selectedCategory])
 
   const createPost = async () => {
     if (!user || !newPost.title.trim() || !newPost.content.trim() || !db) return

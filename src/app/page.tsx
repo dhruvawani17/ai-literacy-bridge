@@ -2,9 +2,8 @@
 
 import { StudentDashboard } from '@/components/StudentDashboard'
 import { CommunityForum } from '@/components/CommunityForum'
-import Calendar from '@/components/Calendar'
-import Whiteboard from '@/components/Whiteboard'
-import Analytics from '@/components/Analytics'
+import { TestimonialsSection } from '@/components/TestimonialsSection'
+import InteractiveDemo from '@/components/InteractiveDemo'
 import { useUserStore } from '@/store'
 import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
 import { useRouter } from 'next/navigation'
@@ -74,6 +73,10 @@ function LandingPage() {
   const [language, setLanguage] = useState('en')
   const [showFAQ, setShowFAQ] = useState(false)
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
+  const [showStudentStories, setShowStudentStories] = useState(false)
+  const [showScribeStories, setShowScribeStories] = useState(false)
+  const [showExamStats, setShowExamStats] = useState(false)
+  const [expandedFeature, setExpandedFeature] = useState<string | null>(null)
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -420,22 +423,10 @@ function LandingPage() {
                   Features
                 </button>
                 <button
-                  onClick={() => scrollToSection('calendar')}
+                  onClick={() => scrollToSection('demo')}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium text-sm lg:text-base"
                 >
-                  Calendar
-                </button>
-                <button
-                  onClick={() => scrollToSection('whiteboard')}
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium text-sm lg:text-base"
-                >
-                  Whiteboard
-                </button>
-                <button
-                  onClick={() => scrollToSection('analytics')}
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium text-sm lg:text-base"
-                >
-                  Analytics
+                  Demo
                 </button>
                 <button
                   onClick={() => scrollToSection('impact')}
@@ -540,22 +531,10 @@ function LandingPage() {
                       Features
                     </button>
                     <button
-                      onClick={() => { scrollToSection('calendar'); setShowMobileMenu(false) }}
+                      onClick={() => { scrollToSection('demo'); setShowMobileMenu(false) }}
                       className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2"
                     >
-                      Calendar
-                    </button>
-                    <button
-                      onClick={() => { scrollToSection('whiteboard'); setShowMobileMenu(false) }}
-                      className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2"
-                    >
-                      Whiteboard
-                    </button>
-                    <button
-                      onClick={() => { scrollToSection('analytics'); setShowMobileMenu(false) }}
-                      className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2"
-                    >
-                      Analytics
+                      Demo
                     </button>
                     <button
                       onClick={() => { scrollToSection('impact'); setShowMobileMenu(false) }}
@@ -685,24 +664,40 @@ function LandingPage() {
       {/* Stats Section */}
       <section className="py-12 sm:py-16 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Our Impact</h2>
+            <p className="text-gray-600">Real numbers from real students achieving their dreams</p>
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            <div className="text-center animate-on-scroll opacity-0">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">{stats.students.toLocaleString()}+</div>
-              <div className="text-gray-600 text-sm sm:text-base">Students Helped</div>
+            <div className="text-center animate-on-scroll opacity-0 group cursor-pointer" onClick={() => setShowStudentStories(true)}>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2 group-hover:text-blue-700 transition-colors">{stats.students.toLocaleString()}+</div>
+                <div className="text-gray-600 text-sm sm:text-base font-medium">Students Helped</div>
+                <div className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to see stories</div>
+              </div>
             </div>
-            <div className="text-center animate-on-scroll opacity-0">
-              <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">{stats.scribes}+</div>
-              <div className="text-gray-600 text-sm sm:text-base">Volunteer Scribes</div>
+            <div className="text-center animate-on-scroll opacity-0 group cursor-pointer" onClick={() => setShowScribeStories(true)}>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2 group-hover:text-purple-700 transition-colors">{stats.scribes}+</div>
+                <div className="text-gray-600 text-sm sm:text-base font-medium">Volunteer Scribes</div>
+                <div className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to see volunteers</div>
+              </div>
             </div>
-            <div className="text-center animate-on-scroll opacity-0">
-              <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">{stats.exams}+</div>
-              <div className="text-gray-600 text-sm sm:text-base">Exams Supported</div>
+            <div className="text-center animate-on-scroll opacity-0 group cursor-pointer" onClick={() => setShowExamStats(true)}>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2 group-hover:text-green-700 transition-colors">{stats.exams}+</div>
+                <div className="text-gray-600 text-sm sm:text-base font-medium">Exams Supported</div>
+                <div className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click for exam types</div>
+              </div>
             </div>
-            <div className="text-center animate-on-scroll opacity-0">
-              <div className="text-3xl sm:text-4xl font-bold text-yellow-600 mb-2">{stats.rating}</div>
-              <div className="text-gray-600 flex items-center justify-center text-sm sm:text-base">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                Rating
+            <div className="text-center animate-on-scroll opacity-0 group">
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-yellow-600 mb-2 group-hover:text-yellow-700 transition-colors">{stats.rating}</div>
+                <div className="text-gray-600 flex items-center justify-center text-sm sm:text-base font-medium">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                  Rating
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Based on 500+ reviews</div>
               </div>
             </div>
           </div>
@@ -730,7 +725,7 @@ function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-lg animate-on-scroll opacity-0 relative overflow-hidden">
+            <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-lg animate-on-scroll opacity-0 relative overflow-hidden cursor-pointer" onClick={() => setExpandedFeature(expandedFeature === 'matching' ? null : 'matching')}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <CardContent className="p-6 sm:p-8 relative z-10">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:rotate-12 shadow-lg">
@@ -759,10 +754,17 @@ function LandingPage() {
                 <div className="mt-4 h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left"></div>
                 </div>
+                {expandedFeature === 'matching' && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg animate-fade-in">
+                    <h4 className="font-semibold text-blue-900 mb-2">How It Works</h4>
+                    <p className="text-blue-800 text-sm mb-2">Our AI analyzes 15+ factors including subject mastery, past performance, communication style, and availability to find your perfect match.</p>
+                    <div className="text-xs text-blue-600">Success rate: 96% match satisfaction</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-lg animate-on-scroll opacity-0 relative overflow-hidden">
+            <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-lg animate-on-scroll opacity-0 relative overflow-hidden cursor-pointer" onClick={() => setExpandedFeature(expandedFeature === 'voice' ? null : 'voice')}>
               <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <CardContent className="p-6 sm:p-8 relative z-10">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:rotate-12 shadow-lg">
@@ -791,6 +793,13 @@ function LandingPage() {
                 <div className="mt-4 h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left"></div>
                 </div>
+                {expandedFeature === 'voice' && (
+                  <div className="mt-4 p-4 bg-purple-50 rounded-lg animate-fade-in">
+                    <h4 className="font-semibold text-purple-900 mb-2">Voice Features</h4>
+                    <p className="text-purple-800 text-sm mb-2">Crystal-clear voice synthesis, real-time transcription, and natural conversation flow make learning accessible through audio.</p>
+                    <div className="text-xs text-purple-600">Supports 12+ languages with regional accents</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -940,51 +949,9 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Calendar Section */}
-      <section id="calendar" className="py-16 sm:py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Study Calendar
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600">
-              Schedule exams, study sessions, and appointments with your scribe
-            </p>
-          </div>
-          <Calendar />
-        </div>
-      </section>
-
-      {/* Whiteboard Section */}
-      <section id="whiteboard" className="py-16 sm:py-20 bg-white px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Collaborative Whiteboard
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600">
-              Draw, sketch, and collaborate visually with your scribe and peers
-            </p>
-          </div>
-          <div className="bg-gray-100 rounded-lg overflow-hidden">
-            <Whiteboard />
-          </div>
-        </div>
-      </section>
-
-      {/* Analytics Section */}
-      <section id="analytics" className="py-16 sm:py-20 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Analytics Dashboard
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600">
-              Track progress, view insights, and monitor educational outcomes
-            </p>
-          </div>
-          <Analytics />
-        </div>
+      {/* Interactive Demo Section */}
+      <section id="demo" className="py-16 sm:py-20 bg-white px-4 sm:px-6 lg:px-8">
+        <InteractiveDemo />
       </section>
 
       {/* Testimonials Section */}
@@ -999,76 +966,7 @@ function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <Card className="bg-white shadow-lg border-0">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex items-center mb-3 sm:mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 italic">
-                  "The AI matching system found me the perfect scribe for my engineering entrance exam.
-                  The voice support made studying so much easier. I scored 95%!"
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                    <span className="text-white font-semibold text-sm sm:text-base">R</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">Rahul S.</div>
-                    <div className="text-gray-600 text-xs sm:text-sm">Engineering Student</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white shadow-lg border-0">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex items-center mb-3 sm:mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 italic">
-                  "Being a volunteer scribe has been incredibly rewarding. The platform makes it easy to
-                  connect with students who need my help. Technology that makes a real difference!"
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                    <span className="text-white font-semibold text-sm sm:text-base">P</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">Priya M.</div>
-                    <div className="text-gray-600 text-xs sm:text-sm">Volunteer Scribe</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white shadow-lg border-0">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex items-center mb-3 sm:mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 italic">
-                  "The accessibility features are outstanding. Voice navigation and AI tutors helped me
-                  excel in my medical entrance exam. This platform levels the playing field."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                    <span className="text-white font-semibold text-sm sm:text-base">A</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">Ananya K.</div>
-                    <div className="text-gray-600 text-xs sm:text-sm">Medical Student</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <TestimonialsSection />
         </div>
       </section>
 
@@ -1166,6 +1064,161 @@ function LandingPage() {
         >
           <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 transform rotate-180" />
         </button>
+      )}
+
+      {/* Student Stories Modal */}
+      {showStudentStories && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Student Success Stories</h3>
+                <button
+                  onClick={() => setShowStudentStories(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-2">Sarah, College Student</h4>
+                  <p className="text-blue-800 text-sm mb-2">"AI Literacy Bridge helped me pass my final exams. The voice tutor explained complex concepts clearly, and my scribe was incredibly patient and supportive."</p>
+                  <div className="flex items-center text-xs text-blue-600">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                    <span>5.0 rating</span>
+                  </div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-900 mb-2">Michael, High School Senior</h4>
+                  <p className="text-green-800 text-sm mb-2">"I was struggling with math, but the AI tutor broke down problems step by step. My volunteer scribe helped me understand the concepts I couldn't see."</p>
+                  <div className="flex items-center text-xs text-green-600">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                    <span>5.0 rating</span>
+                  </div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-900 mb-2">Emma, Graduate Student</h4>
+                  <p className="text-purple-800 text-sm mb-2">"The platform's accessibility features made it possible for me to continue my education. The community support is amazing."</p>
+                  <div className="flex items-center text-xs text-purple-600">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                    <span>5.0 rating</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scribe Stories Modal */}
+      {showScribeStories && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Volunteer Scribe Stories</h3>
+                <button
+                  onClick={() => setShowScribeStories(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-6">
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-900 mb-2">Dr. James Wilson, Retired Teacher</h4>
+                  <p className="text-purple-800 text-sm mb-2">"Volunteering as a scribe has been incredibly rewarding. I get to help students achieve their dreams while sharing my knowledge."</p>
+                  <div className="text-xs text-purple-600">150+ students helped</div>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-2">Maria Garcia, College Student</h4>
+                  <p className="text-blue-800 text-sm mb-2">"As someone who benefited from educational support, I love giving back. The platform makes it easy to connect with students who need help."</p>
+                  <div className="text-xs text-blue-600">80+ students helped</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-900 mb-2">Robert Chen, Software Engineer</h4>
+                  <p className="text-green-800 text-sm mb-2">"Using my technical skills to improve accessibility in education feels meaningful. Every student I help is a victory for inclusivity."</p>
+                  <div className="text-xs text-green-600">200+ students helped</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam Stats Modal */}
+      {showExamStats && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Exam Types Supported</h3>
+                <button
+                  onClick={() => setShowExamStats(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-2">Academic Exams</h4>
+                  <ul className="text-blue-800 text-sm space-y-1">
+                    <li>• SAT/ACT</li>
+                    <li>• GRE/GMAT</li>
+                    <li>• College Entrance Exams</li>
+                    <li>• AP/IB Tests</li>
+                  </ul>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-900 mb-2">Professional Certifications</h4>
+                  <ul className="text-green-800 text-sm space-y-1">
+                    <li>• Bar Exam</li>
+                    <li>• Medical Licensing</li>
+                    <li>• CPA Exam</li>
+                    <li>• Real Estate License</li>
+                  </ul>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-900 mb-2">School Assessments</h4>
+                  <ul className="text-purple-800 text-sm space-y-1">
+                    <li>• Final Exams</li>
+                    <li>• Midterm Tests</li>
+                    <li>• Quiz Support</li>
+                    <li>• Homework Help</li>
+                  </ul>
+                </div>
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-yellow-900 mb-2">Language Exams</h4>
+                  <ul className="text-yellow-800 text-sm space-y-1">
+                    <li>• TOEFL/IELTS</li>
+                    <li>• Language Proficiency</li>
+                    <li>• ESL Assessments</li>
+                    <li>• Bilingual Exams</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-2">Success Rate</h4>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Average Pass Rate:</span>
+                  <span className="font-bold text-green-600">94%</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-gray-600">Student Satisfaction:</span>
+                  <span className="font-bold text-blue-600">4.9/5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
