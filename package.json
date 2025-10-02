@@ -6,7 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "firebase:setup": "bash scripts/setup-firebase.sh",
+    "firebase:deploy": "firebase deploy --only firestore:rules,firestore:indexes",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules",
+    "firebase:deploy:indexes": "firebase deploy --only firestore:indexes",
+    "firebase:emulator": "firebase emulators:start",
+    "firebase:login": "firebase login"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",

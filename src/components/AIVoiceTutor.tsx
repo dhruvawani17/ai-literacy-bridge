@@ -54,7 +54,6 @@ export function AIVoiceTutor() {
   
   // Settings
   const [autoSpeak, setAutoSpeak] = useState(true)
-  const [autoListen, setAutoListen] = useState(true)
   const [speechRate, setSpeechRate] = useState(0.9)
   const [speechVolume, setSpeechVolume] = useState(0.8)
   const [voicePitch, setVoicePitch] = useState(1.0)
@@ -103,7 +102,7 @@ export function AIVoiceTutor() {
       const welcomeMessage: VoiceMessage = {
         id: 'welcome',
         type: 'assistant',
-        content: 'Hello! I\'m your AI voice tutor. I\'m here to help you learn through conversation. You can ask me questions about any subject - mathematics, science, English, history, or anything else you\'d like to explore. Press the microphone button or use the spacebar to start talking!',
+        content: 'Hello! I\'m your AI voice tutor. I\'m here to help you learn through conversation. You can ask me questions about any subject - mathematics, science, English, history, or anything else you\'d like to explore. Click the microphone button to start recording your question!',
         timestamp: new Date()
       }
       setMessages([welcomeMessage])
@@ -129,15 +128,12 @@ export function AIVoiceTutor() {
       } else if (e.code === 'KeyT' && e.ctrlKey && selectedVoice && !isSpeaking) {
         e.preventDefault()
         speakText("Hello! This is how I sound with the selected voice.")
-      } else if (e.code === 'KeyL' && e.ctrlKey) {
-        e.preventDefault()
-        setAutoListen(!autoListen)
       }
     }
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  }, [isListening, speechSupported, autoSpeak, selectedVoice, isSpeaking, autoListen])
+  }, [isListening, speechSupported, autoSpeak, selectedVoice, isSpeaking])
 
   useEffect(() => {
     // Scroll to bottom of messages
@@ -150,7 +146,7 @@ export function AIVoiceTutor() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     const recognition = new SpeechRecognition()
     
-    recognition.continuous = true
+    recognition.continuous = false // Changed to false for push-to-talk
     recognition.interimResults = true
     recognition.lang = 'en-US'
     recognition.maxAlternatives = 1
@@ -179,14 +175,15 @@ export function AIVoiceTutor() {
 
       if (finalTranscript.trim()) {
         console.log('🗣️ Final transcript received:', finalTranscript.trim())
-        console.log('🎤 Keeping microphone active for continuous conversation')
+        console.log('🛑 Stopping microphone to prevent feedback')
         
-        // DON'T stop recognition - keep it running for continuous conversation
-        // Just clear the current transcript display
+        // Stop recognition when we get final results to prevent AI response feedback
+        recognition.stop()
+        setIsListening(false)
         setTranscript('')
         setCurrentMessage('')
         
-        // Process the message while keeping mic active
+        // Process the message
         handleUserMessage(finalTranscript.trim())
       }
     }
@@ -211,7 +208,7 @@ export function AIVoiceTutor() {
   }
 
   const startListening = () => {
-    console.log('🎯 Starting continuous listening mode')
+    console.log('🎯 Starting push-to-talk listening mode')
     
     if (!speechSupported) {
       console.log('❌ Speech not supported')
@@ -235,15 +232,15 @@ export function AIVoiceTutor() {
     setTranscript('')
     setCurrentMessage('')
     
-    // Create new continuous recognition
+    // Create new push-to-talk recognition
     setTimeout(() => {
-      console.log('🚀 Starting continuous speech recognition')
+      console.log('🚀 Starting push-to-talk speech recognition')
       recognitionRef.current = setupSpeechRecognition()
       
       if (recognitionRef.current) {
         try {
           recognitionRef.current.start()
-          console.log('✅ Continuous listening active - speak anytime!')
+          console.log('✅ Push-to-talk listening active - speak now!')
         } catch (error) {
           console.error('❌ Error starting speech recognition:', error)
           setIsListening(false)
@@ -297,13 +294,13 @@ export function AIVoiceTutor() {
     utterance.onend = () => {
       console.log('✅ AI finished speaking')
       setIsSpeaking(false)
-      console.log('🎤 Microphone remains active for continuous conversation')
+      console.log('🎤 Ready for next click-to-talk')
     }
     
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event.error)
       setIsSpeaking(false)
-      console.log('🎤 Microphone remains active despite speech error')
+      console.log('🎤 Ready for next click-to-talk despite speech error')
     }
 
     synthRef.current.speak(utterance)
@@ -368,15 +365,8 @@ export function AIVoiceTutor() {
       // Speak the response if auto-speak is enabled
       if (autoSpeak) {
         await speakText(response)
-      } else {
-        // If not speaking, immediately restart listening
-        console.log('🔄 Not speaking, restarting listening immediately')
-        setTimeout(() => {
-          if (autoListen && speechSupported) {
-            startListening()
-          }
-        }, 500)
       }
+      // Note: No auto-restart of listening - user must click to talk again
 
     } catch (error) {
       console.error('Error getting AI response:', error)
@@ -392,14 +382,8 @@ export function AIVoiceTutor() {
       
       if (autoSpeak) {
         speakText(errorMessage.content)
-      } else {
-        // If not speaking, immediately restart listening
-        setTimeout(() => {
-          if (autoListen && speechSupported) {
-            startListening()
-          }
-        }, 500)
       }
+      // Note: No auto-restart of listening - user must click to talk again
     } finally {
       setIsLoading(false)
     }
@@ -455,7 +439,7 @@ export function AIVoiceTutor() {
             {isListening && (
               <Badge variant="secondary" className="bg-white/20 text-white animate-pulse">
                 <Mic className="h-3 w-3 mr-1" />
-                Listening
+                Recording
               </Badge>
             )}
           </div>
@@ -467,10 +451,11 @@ export function AIVoiceTutor() {
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">How to Use Voice Tutor:</h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Press the microphone button or use <strong>Spacebar</strong> to start talking</li>
-            <li>• Press <strong>Escape</strong> to stop listening</li>
-            <li>• Press <strong>Ctrl+S</strong> to stop speech</li>
-            <li>• Ask questions about any subject you're studying</li>
+            <li>• Click the microphone button or press <strong>Spacebar</strong> to start recording</li>
+            <li>• Speak your question clearly</li>
+            <li>• The microphone will automatically stop when you finish speaking</li>
+            <li>• Click again to ask another question after the AI responds</li>
+            <li>• Press <strong>Ctrl+S</strong> to stop speech playback</li>
           </ul>
         </div>
 
@@ -479,7 +464,7 @@ export function AIVoiceTutor() {
           {messages.length === 0 ? (
             <div className="text-center text-purple-600 mt-20">
               <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-75" />
-              <p>Start a conversation by pressing the microphone button</p>
+              <p>Click the microphone button to ask your first question</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -543,12 +528,12 @@ export function AIVoiceTutor() {
             {isListening ? (
               <>
                 <MicOff className="h-4 w-4" />
-                Stop Listening
+                Recording...
               </>
             ) : (
               <>
                 <Mic className="h-4 w-4" />
-                Start Listening
+                Click to Ask
               </>
             )}
           </Button>
@@ -589,41 +574,32 @@ export function AIVoiceTutor() {
             <Settings className="h-4 w-4" />
             Auto-Speak: {autoSpeak ? 'ON' : 'OFF'}
           </Button>
-
-          <Button
-            onClick={() => setAutoListen(!autoListen)}
-            variant={autoListen ? "default" : "outline"}
-            className="flex items-center gap-2"
-          >
-            <Mic className="h-4 w-4" />
-            Auto-Listen: {autoListen ? 'ON' : 'OFF'}
-          </Button>
         </div>
 
         {/* Status Display */}
         <div className="mt-4 text-center">
           {speechSupported && !isListening && !isSpeaking && !isLoading && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-green-700 font-medium">⏸️ Ready to Start</p>
-              <p className="text-sm text-blue-700">Click "Start Listening" for continuous conversation mode</p>
+              <p className="text-green-700 font-medium">✅ Ready</p>
+              <p className="text-sm text-blue-700">Click "Click to Ask" to record your question</p>
             </div>
           )}
           {isListening && !isSpeaking && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-700 font-medium animate-pulse">🎤 Continuous Listening Active</p>
-              <p className="text-sm text-blue-600">Speak anytime - microphone stays on for seamless conversation</p>
+              <p className="text-blue-700 font-medium animate-pulse">🎤 Recording Your Question</p>
+              <p className="text-sm text-blue-600">Speak clearly - recording will stop automatically when you finish</p>
             </div>
           )}
-          {isListening && isSpeaking && (
+          {!isListening && isSpeaking && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 font-medium">🔊 AI Speaking + Mic Active</p>
-              <p className="text-sm text-green-600">Continue speaking when I finish - no need to click anything!</p>
+              <p className="text-green-700 font-medium">🔊 AI Responding</p>
+              <p className="text-sm text-green-600">Click the microphone again when you want to ask another question</p>
             </div>
           )}
-          {isListening && isLoading && (
+          {isLoading && !isListening && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p className="text-orange-700 font-medium">🤔 Processing + Mic Active</p>
-              <p className="text-sm text-orange-600">Analyzing your question while staying ready for more input</p>
+              <p className="text-orange-700 font-medium">🤔 Processing Your Question</p>
+              <p className="text-sm text-orange-600">Analyzing your question and preparing a response</p>
             </div>
           )}
           {!speechSupported && (

@@ -64,7 +64,6 @@ export function LiveKitVoiceTutor() {
   // Messages and settings
   const [messages, setMessages] = useState<VoiceMessage[]>([])
   const [autoSpeak, setAutoSpeak] = useState(true)
-  const [autoListen, setAutoListen] = useState(true)
   const [speechRate, setSpeechRate] = useState(0.9)
   const [speechVolume, setSpeechVolume] = useState(0.8)
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null)
@@ -128,15 +127,12 @@ export function LiveKitVoiceTutor() {
       } else if (e.code === 'KeyT' && e.ctrlKey && selectedVoice && !isSpeaking) {
         e.preventDefault()
         speakText("Hello! This is how I sound with the selected voice.")
-      } else if (e.code === 'KeyL' && e.ctrlKey) {
-        e.preventDefault()
-        setAutoListen(!autoListen)
       }
     }
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  }, [isListening, isConnected, selectedVoice, isSpeaking, autoListen])
+  }, [isListening, isConnected, selectedVoice, isSpeaking])
 
   // Setup speech recognition
   const setupSpeechRecognition = useCallback(() => {
@@ -147,7 +143,7 @@ export function LiveKitVoiceTutor() {
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition
     const recognition = new SpeechRecognition()
     
-    recognition.continuous = true
+    recognition.continuous = false // Changed to false for push-to-talk
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
@@ -174,13 +170,14 @@ export function LiveKitVoiceTutor() {
 
       if (finalTranscript.trim()) {
         console.log('🗣️ Final transcript received:', finalTranscript.trim())
-        console.log('🎤 Keeping microphone active for continuous conversation')
+        console.log('🛑 Stopping microphone to prevent feedback')
         
-        // DON'T stop recognition - keep it running for continuous conversation
-        // Just clear the current transcript display
+        // Stop recognition when we get final results to prevent AI response feedback
+        recognition.stop()
+        setIsListening(false)
         setCurrentTranscript('')
         
-        // Process the message while keeping mic active
+        // Process the message
         handleUserMessage(finalTranscript.trim())
       }
     }
@@ -407,13 +404,13 @@ export function LiveKitVoiceTutor() {
     utterance.onend = () => {
       console.log('✅ AI finished speaking')
       setIsSpeaking(false)
-      console.log('🎤 Microphone remains active for continuous conversation')
+      console.log('🎤 Ready for next click-to-talk')
     }
     
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event.error)
       setIsSpeaking(false)
-      console.log('🎤 Microphone remains active despite speech error')
+      console.log('🎤 Ready for next click-to-talk despite speech error')
     }
 
     speechSynthesis.current.speak(utterance)
@@ -540,7 +537,7 @@ export function LiveKitVoiceTutor() {
             {isListening && (
               <Badge variant="secondary" className="bg-white/20 text-white animate-pulse">
                 <Mic className="h-3 w-3 mr-1" />
-                Listening
+                Recording
               </Badge>
             )}
           </div>
@@ -589,13 +586,11 @@ export function LiveKitVoiceTutor() {
           <h3 className="font-semibold text-purple-900 mb-2">How to Use LiveKit Voice Tutor:</h3>
           <ul className="text-sm text-purple-700 space-y-1">
             <li>• Connect to voice session for real-time interaction</li>
-            <li>• Speak naturally - the tutor will respond automatically</li>
-            <li>• Auto-listening will start after AI responses for continuous conversation</li>
-            <li>• Use <strong>Spacebar</strong> to manually start listening</li>
-            <li>• Press <strong>Escape</strong> to stop listening</li>
+            <li>• Click "Start Listening" or use <strong>Spacebar</strong> to record your question</li>
+            <li>• Speak clearly - recording will stop automatically when you finish</li>
+            <li>• Click again to ask another question after the AI responds</li>
             <li>• Press <strong>Ctrl+S</strong> to stop speaking</li>
             <li>• Press <strong>Ctrl+T</strong> to test selected voice</li>
-            <li>• Press <strong>Ctrl+L</strong> to toggle auto-listening</li>
             <li>• Ask questions about any subject you're studying</li>
           </ul>
         </div>
@@ -644,15 +639,6 @@ export function LiveKitVoiceTutor() {
               </div>
             </div>
             <div className="mt-3 flex gap-3">
-              <Button
-                onClick={() => setAutoListen(!autoListen)}
-                variant={autoListen ? "default" : "outline"}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <Mic className="h-3 w-3" />
-                Auto-Listen: {autoListen ? 'ON' : 'OFF'}
-              </Button>
               <Button
                 onClick={() => setAutoSpeak(!autoSpeak)}
                 variant={autoSpeak ? "default" : "outline"}
@@ -739,12 +725,12 @@ export function LiveKitVoiceTutor() {
                 {isListening ? (
                   <>
                     <MicOff className="h-4 w-4" />
-                    Stop Listening
+                    Recording...
                   </>
                 ) : (
                   <>
                     <Mic className="h-4 w-4" />
-                    Start Listening
+                    Click to Ask
                   </>
                 )}
               </Button>
@@ -826,26 +812,26 @@ export function LiveKitVoiceTutor() {
           )}
           {isConnected && !isListening && !isSpeaking && !isProcessing && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-green-700 font-medium">⏸️ Ready to Start</p>
-              <p className="text-sm text-blue-700">Click "Start Listening" for continuous conversation mode</p>
+              <p className="text-green-700 font-medium">✅ Ready</p>
+              <p className="text-sm text-blue-700">Click "Click to Ask" to record your question</p>
             </div>
           )}
           {isConnected && isListening && !isSpeaking && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-700 font-medium animate-pulse">🎤 Continuous Listening Active</p>
-              <p className="text-sm text-blue-600">Speak anytime - microphone stays on for seamless conversation</p>
+              <p className="text-blue-700 font-medium animate-pulse">🎤 Recording Your Question</p>
+              <p className="text-sm text-blue-600">Speak clearly - recording will stop automatically when you finish</p>
             </div>
           )}
-          {isConnected && isListening && isSpeaking && (
+          {isConnected && !isListening && isSpeaking && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 font-medium">🔊 AI Speaking + Mic Active</p>
-              <p className="text-sm text-green-600">Continue speaking when I finish - no need to click anything!</p>
+              <p className="text-green-700 font-medium">🔊 AI Responding</p>
+              <p className="text-sm text-green-600">Click the microphone again when you want to ask another question</p>
             </div>
           )}
-          {isConnected && isListening && isProcessing && (
+          {isConnected && isProcessing && !isListening && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p className="text-orange-700 font-medium">🤔 Processing + Mic Active</p>
-              <p className="text-sm text-orange-600">Analyzing your question while staying ready for more input</p>
+              <p className="text-orange-700 font-medium">🤔 Processing Your Question</p>
+              <p className="text-sm text-orange-600">Analyzing your question and preparing a response</p>
             </div>
           )}
         </div>

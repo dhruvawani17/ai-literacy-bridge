@@ -7,7 +7,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { studentService } from '@/lib/firestore-service'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -56,6 +58,8 @@ export function StudentRegistration({
   onRegistrationComplete, 
   enableVoiceSupport = true 
 }: StudentRegistrationProps) {
+  const router = useRouter()
+  
   // Form state management
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -266,9 +270,8 @@ export function StudentRegistration({
     setIsSubmitting(true)
     
     try {
-      // Create complete student profile
-      const studentProfile: StudentProfile = {
-        id: `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      // Create complete student profile (without id initially)
+      const studentProfileData = {
         userId: `user_${Date.now()}`, // Would come from auth system
         personalInfo: formData.personalInfo!,
         disability: formData.disability!,
@@ -282,13 +285,22 @@ export function StudentRegistration({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
+
+      // Save to Firestore and get the document ID
+      const firestoreId = await studentService.create(studentProfileData)
+      
+      // Create the complete profile with the generated ID
+      const studentProfile: StudentProfile = {
+        ...studentProfileData,
+        id: `student_${firestoreId}` // Use Firestore doc ID for uniqueness
+      }
       
       // Show success screen first
       setCompletedProfile(studentProfile)
       setIsCompleted(true)
       
       if (enableVoiceSupport) {
-        speakInstructions('Registration completed successfully! Your profile has been submitted for verification.')
+        speakInstructions('Registration completed successfully! Your profile has been saved and submitted for verification.')
       }
 
       // Call completion handler after delay
@@ -333,6 +345,11 @@ export function StudentRegistration({
         onComplete={() => {
           // This will be called after the countdown
           setIsCompleted(false)
+          // Pass the student data to the dashboard via localStorage
+          if (completedProfile) {
+            localStorage.setItem('currentStudent', JSON.stringify(completedProfile))
+          }
+          router.push('/scribe-dashboard')
         }}
       />
     )

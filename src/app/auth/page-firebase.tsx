@@ -18,7 +18,7 @@ import {
   EyeOff,
   Mail
 } from 'lucide-react'
-import { useFirebaseAuth } from '@/lib/auth0-provider'
+import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
 import { useUserStore } from '@/store'
 import { useRouter } from 'next/navigation'
 

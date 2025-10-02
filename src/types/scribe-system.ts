@@ -361,3 +361,59 @@ export interface MatchingConfig {
     backupScribeCount: number
   }
 }
+
+// Gamification System Types
+export interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: 'learning' | 'community' | 'excellence' | 'milestone'
+  points: number
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  requirements: {
+    type: 'sessionsCompleted' | 'studyHours' | 'perfectRatings' | 'currentStreak' | 'longestStreak' | 'communityPosts' | 'scribeMatches'
+    value: number
+  }
+  unlockedAt?: Date
+}
+
+export interface UserGamification {
+  userId: string
+  totalPoints: number
+  level: number
+  experiencePoints: number
+  experienceToNextLevel: number
+  achievements: Achievement[]
+  stats: {
+    sessionsCompleted: number
+    studyHours: number
+    perfectRatings: number
+    currentStreak: number
+    longestStreak: number
+    communityPosts: number
+    scribeMatches: number
+  }
+  badges: {
+    [key: string]: {
+      earned: boolean
+      earnedAt?: Date
+      progress: number // 0-100
+    }
+  }
+  leaderboard: {
+    globalRank: number
+    weeklyRank: number
+    monthlyRank: number
+  }
+}
+
+export interface LeaderboardEntry {
+  userId: string
+  name: string
+  avatar?: string
+  points: number
+  level: number
+  achievements: number
+  rank: number
+}

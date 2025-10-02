@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -22,6 +23,9 @@ import { AIVoiceTutor } from './AIVoiceTutor'
 import { LiveKitVoiceTutor } from './LiveKitVoiceTutor'
 import { ScribeMatcher } from './ScribeMatcher'
 import { VisualizationEngine } from './VisualizationEngine'
+import { StudyAssistant } from './StudyAssistant'
+import { gamificationService } from '@/lib/gamification-service'
+import { UserGamification } from '@/types/scribe-system'
 import { cn } from '@/lib/utils'
 
 interface Subject {
@@ -64,6 +68,7 @@ const DEFAULT_SUBJECTS: Subject[] = [
 ]
 
 export function StudentDashboard() {
+  const router = useRouter()
   const { user } = useUserStore()
   const { sessions, currentSession, startSession, aiMemory } = useLearningStore()
   const { upcomingSessions } = useScribeStore()
@@ -77,12 +82,29 @@ export function StudentDashboard() {
   const [showVisualization, setShowVisualization] = useState(false)
   const [showVoiceTutor, setShowVoiceTutor] = useState(false)
   const [showLiveKitVoiceTutor, setShowLiveKitVoiceTutor] = useState(false)
+  const [showStudyAssistant, setShowStudyAssistant] = useState(false)
+  const [userGamification, setUserGamification] = useState<UserGamification | null>(null)
 
-  const handleStartLearning = (subjectId: string, topic: string) => {
+  useEffect(() => {
+    const loadGamification = async () => {
+      if (user?.id) {
+        const gamification = await gamificationService.getUserGamification(user.id)
+        setUserGamification(gamification)
+      }
+    }
+    loadGamification()
+  }, [user?.id])
+
+  const handleStartLearning = async (subjectId: string, topic: string) => {
     setSelectedSubject(subjectId)
     setSelectedTopic(topic)
     startSession(subjectId, topic)
     setShowChat(true)
+
+    // Award points for starting a session
+    if (user?.id) {
+      await gamificationService.updateUserStats(user.id, 'studyHours', 1) // Assuming 1 hour per session
+    }
   }
 
   const handleCloseChat = () => {
@@ -92,7 +114,7 @@ export function StudentDashboard() {
   }
 
   const handleOpenScribeMatcher = () => {
-    setShowScribeMatcher(true)
+    router.push('/scribe-matching')
   }
 
   const handleCloseScribeMatcher = () => {
@@ -125,6 +147,14 @@ export function StudentDashboard() {
 
   const handleCloseLiveKitVoiceTutor = () => {
     setShowLiveKitVoiceTutor(false)
+  }
+
+  const handleOpenStudyAssistant = () => {
+    setShowStudyAssistant(true)
+  }
+
+  const handleCloseStudyAssistant = () => {
+    setShowStudyAssistant(false)
   }
 
   const getProgressColor = (progress: number) => {
@@ -221,6 +251,10 @@ export function StudentDashboard() {
     )
   }
 
+  if (showStudyAssistant) {
+    return <StudyAssistant onClose={handleCloseStudyAssistant} />
+  }
+
   return (
     <div className={cn(
       "min-h-screen bg-background p-6",
@@ -303,7 +337,7 @@ export function StudentDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Achievements</p>
-              <p className="text-2xl font-bold">12</p>
+              <p className="text-2xl font-bold">{userGamification?.achievements.length || 0}</p>
             </div>
             <Award className="h-8 w-8 text-yellow-500" />
           </div>
@@ -428,6 +462,60 @@ export function StudentDashboard() {
             )}
           </div>
 
+          {/* Gamification */}
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 shadow-sm border border-yellow-200">
+            <h3 className="font-semibold mb-4 flex items-center text-yellow-800">
+              <Award className="h-5 w-5 mr-2" />
+              Your Progress
+            </h3>
+            
+            {userGamification ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Level {userGamification.level}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {userGamification.experiencePoints}/{userGamification.experienceToNextLevel} XP
+                  </span>
+                </div>
+                <div className="bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(userGamification.experiencePoints / userGamification.experienceToNextLevel) * 100}%` }}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-yellow-600">{userGamification.totalPoints}</p>
+                    <p className="text-xs text-muted-foreground">Total Points</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-yellow-600">{userGamification.achievements.length}</p>
+                    <p className="text-xs text-muted-foreground">Achievements</p>
+                  </div>
+                </div>
+
+                {userGamification.achievements.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">Recent Achievements</p>
+                    <div className="space-y-1">
+                      {userGamification.achievements.slice(-2).map((achievement) => (
+                        <div key={achievement.id} className="flex items-center space-x-2 text-sm">
+                          <span className="text-lg">{achievement.icon}</span>
+                          <span>{achievement.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Loading your progress...
+              </p>
+            )}
+          </div>
+
           {/* Upcoming Sessions */}
           <div className="bg-card rounded-lg p-6 shadow-sm border">
             <h3 className="font-semibold mb-4 flex items-center">
@@ -513,6 +601,14 @@ export function StudentDashboard() {
               >
                 <Volume2 className="h-4 w-4 mr-2" />
                 Basic Voice Tutor
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start"
+                onClick={handleOpenStudyAssistant}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Study Assistant
               </Button>
               <Button variant="ghost" className="w-full justify-start">
                 <Volume2 className="h-4 w-4 mr-2" />

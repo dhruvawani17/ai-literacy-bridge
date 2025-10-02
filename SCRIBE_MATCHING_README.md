@@ -181,12 +181,15 @@ CEREBRAS_API_KEY=your_cerebras_api_key
 # Database (if using external)
 DATABASE_URL=your_database_url
 
-# Authentication (if using Auth0)
-AUTH0_SECRET=your_auth0_secret
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=your_auth0_domain
-AUTH0_CLIENT_ID=your_auth0_client_id
-AUTH0_CLIENT_SECRET=your_auth0_client_secret
+# Authentication (Firebase Auth)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+NEXT_PUBLIC_FIREBASE_USE_EMULATOR=false
 ```
 
 ### Development Server

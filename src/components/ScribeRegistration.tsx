@@ -7,7 +7,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { scribeService } from '@/lib/firestore-service'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -60,6 +62,8 @@ export function ScribeRegistration({
   onRegistrationComplete, 
   enableVoiceSupport = true 
 }: ScribeRegistrationProps) {
+  const router = useRouter()
+  
   // Form state management
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -277,9 +281,8 @@ export function ScribeRegistration({
     setIsSubmitting(true)
     
     try {
-      // Create complete scribe profile
-      const scribeProfile: ScribeProfile = {
-        id: `scribe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      // Create complete scribe profile data (without id initially)
+      const scribeProfileData = {
         userId: `user_${Date.now()}`, // Would come from auth system
         personalInfo: formData.personalInfo,
         qualifications: {
@@ -312,13 +315,22 @@ export function ScribeRegistration({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
+
+      // Save to Firestore and get the document ID
+      const firestoreId = await scribeService.create(scribeProfileData)
+      
+      // Create the complete profile with the generated ID
+      const scribeProfile: ScribeProfile = {
+        ...scribeProfileData,
+        id: `scribe_${firestoreId}` // Use Firestore doc ID for uniqueness
+      }
       
       // Show success screen first
       setCompletedProfile(scribeProfile)
       setIsCompleted(true)
       
       if (enableVoiceSupport) {
-        speakInstructions('Registration completed successfully! Your application will be reviewed and you will be contacted for background verification.')
+        speakInstructions('Registration completed successfully! Your application has been saved and will be reviewed for background verification.')
       }
 
       // Call completion handler after delay
@@ -363,6 +375,7 @@ export function ScribeRegistration({
         onComplete={() => {
           // This will be called after the countdown
           setIsCompleted(false)
+          router.push('/scribe-dashboard')
         }}
       />
     )

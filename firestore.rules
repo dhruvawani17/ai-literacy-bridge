@@ -1,0 +1,178 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Students collection
+    match /students/{studentId} {
+      // Anyone can read student profiles (for scribe matching)
+      allow read: if true;
+      
+      // Only authenticated users can create
+      allow create: if isSignedIn();
+      
+      // Only owner or admin can update/delete
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Scribes collection
+    match /scribes/{scribeId} {
+      // Anyone can read scribe profiles (for student matching)
+      allow read: if true;
+      
+      // Only authenticated users can create
+      allow create: if isSignedIn();
+      
+      // Only owner or admin can update/delete
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Exams collection
+    match /exams/{examId} {
+      // Anyone can read exam information
+      allow read: if true;
+      
+      // Only authenticated users can create exams
+      allow create: if isSignedIn();
+      
+      // Only the student who created it or admin can update/delete
+      allow update, delete: if isOwner(resource.data.studentId) || isAdmin();
+    }
+    
+    // Matches collection (scribe-student matches)
+    match /matches/{matchId} {
+      // Only authenticated users can read their own matches
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.scribeId ||
+        isAdmin()
+      );
+      
+      // Only authenticated users can create matches
+      allow create: if isSignedIn();
+      
+      // Only involved parties or admin can update
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.scribeId ||
+        isAdmin()
+      );
+      
+      // Only admin can delete matches
+      allow delete: if isAdmin();
+    }
+    
+    // Chat collection
+    match /chats/{chatId} {
+      // A user can read/write to a chat document if they are a participant.
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
+      
+      // Any signed-in user can create a chat.
+      allow create: if isSignedIn();
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        // A user can read messages if they are a participant of the parent chat.
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+
+        // A user can create a message if they are a participant and the sender.
+        allow create: if isSignedIn() && 
+                        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                        request.resource.data.senderId == request.auth.uid;
+        
+        // Disallow updates and deletes for now for simplicity.
+        allow update, delete: if false;
+      }
+    }
+    
+    // Admin collection (for admin management)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    
+    // User profiles (general user information)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // Stats collection (for analytics)
+    match /stats/{statId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Gamification collection
+    match /gamification/{userId} {
+      // Users can read/write their own gamification data
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+    
+    // Calendar events collection
+    match /calendar-events/{eventId} {
+      // Users can read events they created or are participants in
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid in resource.data.participants ||
+        isAdmin()
+      );
+      
+      // Only authenticated users can create events
+      allow create: if isSignedIn();
+      
+      // Only creator or admin can update/delete
+      allow update, delete: if isOwner(resource.data.createdBy) || isAdmin();
+    }
+    
+    // Whiteboard sessions collection
+    match /whiteboard-sessions/{sessionId} {
+      // Public sessions can be read by anyone, private only by collaborators
+      allow read: if resource.data.isPublic == true || 
+                   (isSignedIn() && request.auth.uid in resource.data.collaborators) ||
+                   isOwner(resource.data.createdBy) ||
+                   isAdmin();
+      
+      // Only authenticated users can create sessions
+      allow create: if isSignedIn();
+      
+      // Only creator or collaborators can update
+      allow update: if isSignedIn() && (
+        isOwner(resource.data.createdBy) ||
+        request.auth.uid in resource.data.collaborators ||
+        isAdmin()
+      );
+      
+      // Only creator or admin can delete
+      allow delete: if isOwner(resource.data.createdBy) || isAdmin();
+    }
+    
+    // Whiteboard paths collection (drawing data)
+    match /whiteboard-paths/{pathId} {
+      // Only collaborators of the session can access paths
+      allow read, write: if isSignedIn() && 
+                           exists(/databases/$(database)/documents/whiteboard-sessions/$(resource.data.sessionId)) &&
+                           (request.auth.uid in get(/databases/$(database)/documents/whiteboard-sessions/$(resource.data.sessionId)).data.collaborators ||
+                            isOwner(get(/databases/$(database)/documents/whiteboard-sessions/$(resource.data.sessionId)).data.createdBy) ||
+                            isAdmin());
+      
+      // Only authenticated users can create paths
+      allow create: if isSignedIn();
+    }
+  }
+}

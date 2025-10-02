@@ -30,9 +30,118 @@ import {
 import StudentRegistration from './StudentRegistration'
 import ScribeRegistration from './ScribeRegistration'
 import DynamicScribeMatching from './DynamicScribeMatching'
+import ChatPage from '../app/chat/page';
 import type { StudentProfile, ScribeProfile, ExamRegistration } from '@/types/scribe-system'
 
-type ViewMode = 'home' | 'student-registration' | 'scribe-registration' | 'dashboard' | 'matching'
+type ViewMode = 'home' | 'student-registration' | 'scribe-registration' | 'dashboard' | 'matching' | 'chat'
+
+interface DashboardViewProps {
+  onNavigate: (view: ViewMode) => void
+  studentCount: number
+  scribeCount: number
+}
+
+function DashboardView({ onNavigate, studentCount, scribeCount }: DashboardViewProps) {
+  return (
+    <div className="min-h-screen p-6 bg-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Platform Dashboard</h1>
+          <p className="text-gray-600 mt-2">Overview of registered users and matching system</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Registered Students</p>
+                  <p className="text-2xl font-bold">{studentCount}</p>
+                </div>
+                <Users className="h-8 w-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Registered Scribes</p>
+                  <p className="text-2xl font-bold">{scribeCount}</p>
+                </div>
+                <Heart className="h-8 w-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Successful Matches</p>
+                  <p className="text-2xl font-bold">{Math.min(studentCount, scribeCount)}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={() => onNavigate('student-registration')}
+                className="w-full"
+              >
+                Register New Student
+              </Button>
+              <Button 
+                onClick={() => onNavigate('scribe-registration')}
+                variant="outline"
+                className="w-full"
+              >
+                Register New Scribe
+              </Button>
+              <Button 
+                onClick={() => onNavigate('matching')}
+                variant="outline"
+                className="w-full"
+              >
+                Start Matching Process
+              </Button>
+              <Button 
+                onClick={() => onNavigate('chat')}
+                variant="outline"
+                className="w-full"
+              >
+                Open Chat
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                {studentCount > 0 || scribeCount > 0 
+                  ? `Platform has ${studentCount + scribeCount} active users.`
+                  : 'No recent activity. Start by registering users!'
+                }
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function ScribeMatchingDemo() {
   const router = useRouter()
@@ -254,8 +363,8 @@ export function ScribeMatchingDemo() {
     // Show success message briefly then redirect to dashboard
     setTimeout(() => {
       setCurrentView('dashboard')
-      // Optional: Navigate to dedicated student dashboard route
-      // router.push(`/student/dashboard?student=${profile.id}`)
+      // Navigate to dedicated scribe dashboard route
+      router.push('/scribe-dashboard')
     }, 1000) // Shorter delay since success screen already shows countdown
   }
 
@@ -272,8 +381,8 @@ export function ScribeMatchingDemo() {
     // Show success message briefly then redirect to dashboard
     setTimeout(() => {
       setCurrentView('dashboard')
-      // Optional: Navigate to dedicated scribe dashboard route
-      // router.push(`/scribe/dashboard?scribe=${profile.id}`)
+      // Navigate to dedicated scribe dashboard route
+      router.push('/scribe-dashboard')
     }, 1000) // Shorter delay since success screen already shows countdown
     
     if (enableVoiceSupport) {
@@ -705,6 +814,44 @@ export function ScribeMatchingDemo() {
     </div>
   )
 
+  const renderContent = () => {
+    switch (currentView) {
+      case 'home':
+        return renderHomeView()
+      case 'student-registration':
+        return <StudentRegistration onRegistrationComplete={handleStudentRegistration} />
+      case 'scribe-registration':
+        return <ScribeRegistration onRegistrationComplete={handleScribeRegistration} />
+      case 'dashboard':
+        return (
+          <DashboardView
+            onNavigate={setCurrentView}
+            studentCount={registeredStudents.length}
+            scribeCount={registeredScribes.length}
+          />
+        )
+      case 'matching':
+        return currentStudent ? (
+          <DynamicScribeMatching
+            student={currentStudent}
+            availableScribes={registeredScribes}
+            onScribeSelected={handleScribeSelected}
+          />
+        ) : (
+          <div className="min-h-screen p-6 bg-background">
+            <div className="text-center">
+              <p className="text-lg">No student selected for matching.</p>
+              <Button onClick={() => setCurrentView('dashboard')}>Back to Dashboard</Button>
+            </div>
+          </div>
+        )
+      case 'chat':
+        return <ChatPage />
+      default:
+        return renderHomeView()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {currentView === 'home' && renderHomeView()}
@@ -760,6 +907,20 @@ export function ScribeMatchingDemo() {
             onScribeSelected={handleScribeSelected}
             enableVoiceSupport={enableVoiceSupport}
           />
+        </div>
+      )}
+      {currentView === 'chat' && (
+        <div>
+          <div className="max-w-4xl mx-auto p-6">
+            <Button
+              onClick={() => setCurrentView('dashboard')}
+              variant="outline"
+              className="mb-6"
+            >
+              ← Back to Dashboard
+            </Button>
+          </div>
+          <ChatPage />
         </div>
       )}
     </div>

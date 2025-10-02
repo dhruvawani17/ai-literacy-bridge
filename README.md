@@ -66,9 +66,14 @@ Students in underserved communities, especially blind/visually impaired students
 
 ## 🚀 Getting Started
 
+> 📖 **Quick Start:** See [QUICKSTART.md](QUICKSTART.md) for a TL;DR version
+> 
+> 🔥 **Firebase Issues?** See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for detailed setup
+
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
+- Firebase account (free tier works!)
 - Cerebras API access (for AI features)
 
 ### Installation
@@ -90,17 +95,41 @@ cp .env.example .env.local
 ```
 Edit `.env.local` with your API keys:
 ```bash
+# Cerebras AI
 CEREBRAS_API_KEY=your_cerebras_api_key_here
 CEREBRAS_ENDPOINT=https://api.cerebras.ai/v1
 CEREBRAS_MODEL=llama3.1-8b
+
+# Firebase (for authentication and database)
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-4. **Run the development server**
+4. **Set up Firebase (Important!)**
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Deploy Firestore security rules
+firebase deploy --only firestore:rules
+```
+
+📖 **See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for detailed Firebase configuration instructions.**
+
+5. **Run the development server**
 ```bash
 npm run dev
 ```
 
-5. **Open your browser**
+6. **Open your browser**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🎯 Key Features

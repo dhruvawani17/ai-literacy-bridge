@@ -18,9 +18,10 @@ import {
   Lock,
   User
 } from 'lucide-react'
-import { useFirebaseAuth } from '@/lib/auth0-provider'
+import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
 import { useUserStore } from '@/store'
 import { useRouter } from 'next/navigation'
+import DebugEnvVars from '@/components/DebugEnvVars'
 
 export default function AuthPage() {
   const { user, appUser, isLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useFirebaseAuth()
@@ -85,6 +86,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <DebugEnvVars />
       {/* Header */}
       <header className="p-6 border-b bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
