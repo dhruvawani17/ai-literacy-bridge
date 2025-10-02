@@ -14,61 +14,31 @@ export default function FirebaseSetupBanner() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    // Check if Firebase is properly configured by looking for permission errors in console
-    const checkFirebaseErrors = () => {
-      // Clear any previous error flags on component mount
-      localStorage.removeItem('firebase_permission_error')
+    // Only show banner if Firebase is NOT configured at all
+    const checkFirebaseConfig = () => {
+      const hasValidConfig = process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
+                            process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+                            process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'demo-api-key'
       
-      const hasFirebaseError = localStorage.getItem('firebase_permission_error')
       const bannerDismissed = sessionStorage.getItem('firebase_banner_dismissed')
       
-      // Only show banner if there's a real config error and Firebase is supposed to be configured
-      const hasValidConfig = process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
-                            process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-      
-      if (hasFirebaseError && !bannerDismissed && hasValidConfig) {
+      // Only show banner if Firebase is not configured AND not dismissed
+      if (!hasValidConfig && !bannerDismissed && !dismissed) {
         setShowBanner(true)
       }
     }
 
-    // Listen for Firebase permission errors (but exclude expected auth errors)
-    const originalError = console.error
-    console.error = function(...args) {
-      const errorMessage = args.join(' ')
-      
-      // Only flag permission errors that are likely configuration issues
-      // Exclude common authentication-related errors that are expected
-      const isConfigError = errorMessage.includes('permission-denied') && 
-                           !errorMessage.includes('auth') && 
-                           !errorMessage.includes('authentication') &&
-                           !errorMessage.includes('sign-in') &&
-                           !errorMessage.includes('Please sign in')
-      
-      if (isConfigError) {
-        localStorage.setItem('firebase_permission_error', 'true')
-        setShowBanner(true)
-      }
-      
-      originalError.apply(console, args)
-    }
+    checkFirebaseConfig()
 
-    checkFirebaseErrors()
+    // Don't intercept console errors anymore - this was causing false positives
+    // The banner should only show based on configuration, not runtime errors
 
-    // Cleanup
-    return () => {
-      console.error = originalError
-    }
   }, [dismissed])
 
   const handleDismiss = () => {
     setDismissed(true)
     setShowBanner(false)
     sessionStorage.setItem('firebase_banner_dismissed', 'true')
-  }
-
-  const handleCopyCommand = () => {
-    navigator.clipboard.writeText('npm run firebase:deploy:rules')
-    alert('Command copied to clipboard!')
   }
 
   if (!showBanner) return null
@@ -81,39 +51,41 @@ export default function FirebaseSetupBanner() {
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-sm sm:text-base">
-                Firebase Permissions Not Configured
+                Firebase Not Configured
               </div>
               <div className="text-xs sm:text-sm text-orange-100 mt-1">
-                The app is running in <strong>development mode</strong> with mock data. 
-                Deploy security rules to enable database features.
+                The app is running with <strong>demo configuration</strong>. 
+                Set up Firebase to enable database features and user authentication.
               </div>
               
               <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <Button
                   size="sm"
-                  onClick={handleCopyCommand}
+                  onClick={() => window.open('/FIREBASE_SETUP.md', '_blank')}
                   className="bg-white text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
                 >
-                  <Terminal className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
-                  Copy Fix Command
+                  <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
+                  Setup Guide
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => window.open('/FIREBASE_SETUP.md', '_blank')}
+                  onClick={() => window.open('/QUICKSTART.md', '_blank')}
                   className="border-white text-white hover:bg-white hover:text-orange-600 text-xs sm:text-sm"
                 >
-                  <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
-                  Setup Guide
+                  <Terminal className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
+                  Quick Start
                 </Button>
               </div>
 
               <details className="mt-2 text-xs">
                 <summary className="cursor-pointer opacity-80 hover:opacity-100">
-                  Show command
+                  Environment variables needed
                 </summary>
                 <code className="block mt-1 bg-black/20 px-2 py-1 rounded font-mono text-xs">
-                  npm run firebase:deploy:rules
+                  NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key<br/>
+                  NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id<br/>
+                  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
                 </code>
               </details>
             </div>

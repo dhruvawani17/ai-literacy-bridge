@@ -345,7 +345,7 @@ function LandingPage() {
                 <BookOpen className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Literacy Bridge
+                AI-Literacy
               </span>
             </div>
 
@@ -371,7 +371,7 @@ function LandingPage() {
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() => changeFontSize('small')}
-                    className={`p-1 rounded text-xs ${fontSize === 'small' ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                    className={`p-1 rounded text-xs ${fontSize === 'small' ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-red-800'}`}
                     aria-label="Small font size"
                   >
                     A
@@ -606,19 +606,26 @@ function LandingPage() {
               Powered by Advanced AI Technology
             </div>
 
-            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              Empowering Students with
-              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 transition-all duration-1000 opacity-100 translate-y-0">
+              <span className="text-blue-600 font-extrabold drop-shadow-lg animate-pulse">
+                Empowering Students with
+              </span>
+              <span className="block text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text font-extrabold drop-shadow-lg animate-pulse relative">
                 Visual Disabilities
+                <div className="absolute inset-0 text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text animate-pulse opacity-75 blur-sm transform scale-105"></div>
               </span>
             </h1>
 
-            <p className={`text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              AI-powered scribe matching and personalized learning platform that connects blind and visually impaired students
-              with skilled scribes for exam success and educational excellence.
+            <p className="text-lg sm:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed transition-all duration-1000 delay-300 opacity-100 translate-y-0">
+              <span className="text-gray-800 font-semibold hover:text-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 hover:bg-clip-text transition-all duration-500">
+                AI-powered scribe matching and personalized learning platform that connects
+              </span>
+              <span className="block text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text font-bold animate-pulse drop-shadow-sm">
+                blind and visually impaired students with skilled scribes for exam success and educational excellence.
+              </span>
             </p>
 
-            <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 transition-all duration-1000 delay-500 opacity-100 translate-y-0">
               <Button
                 onClick={() => router.push('/auth')}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:rotate-1"
