@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Play,
-  Pause,
-  RotateCcw,
   Users,
   MessageCircle,
   BookOpen,
@@ -64,42 +62,25 @@ const demoSteps: DemoStep[] = [
 
 export default function InteractiveDemo() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
+  const currentDemo = demoSteps[currentStep]
+
+  // Auto-advance through demo steps every 4 seconds
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            setCurrentStep((step) => (step + 1) % demoSteps.length)
-            return 0
-          }
-          return prev + 2
-        })
-      }, 100)
-    }
+    if (!isAutoPlaying) return
+
+    const interval = setInterval(() => {
+      setCurrentStep((prevStep) => (prevStep + 1) % demoSteps.length)
+    }, 4000)
+
     return () => clearInterval(interval)
-  }, [isPlaying])
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying)
-  }
-
-  const handleReset = () => {
-    setIsPlaying(false)
-    setCurrentStep(0)
-    setProgress(0)
-  }
+  }, [isAutoPlaying])
 
   const handleStepClick = (index: number) => {
     setCurrentStep(index)
-    setProgress(0)
-    setIsPlaying(false)
+    setIsAutoPlaying(false) // Pause autoplay when user manually navigates
   }
-
-  const currentDemo = demoSteps[currentStep]
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -206,62 +187,20 @@ export default function InteractiveDemo() {
         </CardContent>
       </Card>
 
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        {/* Step Indicators */}
-        <div className="flex space-x-2">
-          {demoSteps.map((step, index) => (
-            <button
-              key={step.id}
-              onClick={() => handleStepClick(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentStep
-                  ? 'bg-blue-600 scale-125'
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to ${step.title}`}
-            />
-          ))}
-        </div>
-
-        {/* Progress Bar */}
-        <div className="flex-1 max-w-md mx-4">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full bg-gradient-to-r ${currentDemo.color} transition-all duration-300`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Control Buttons */}
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleReset}
-            className="flex items-center"
-          >
-            <RotateCcw className="h-4 w-4 mr-1" />
-            Reset
-          </Button>
-          <Button
-            onClick={handlePlayPause}
-            className="flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="h-4 w-4 mr-1" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-1" />
-                Play
-              </>
-            )}
-          </Button>
-        </div>
+      {/* Step Indicators */}
+      <div className="flex justify-center space-x-2 mb-6">
+        {demoSteps.map((step, index) => (
+          <button
+            key={step.id}
+            onClick={() => handleStepClick(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === currentStep
+                ? 'bg-blue-600 scale-125'
+                : 'bg-gray-300 hover:bg-gray-400'
+            }`}
+            aria-label={`Go to ${step.title}`}
+          />
+        ))}
       </div>
 
       {/* Stats */}
