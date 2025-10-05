@@ -1,6 +1,37 @@
 /**
- * Scribe Dashboard Component
- * Dedicated dashboard for scribe registration and volunteer management
+ * ScribeDashboard - Comprehensive dashboard for scribe volunteers and coordinators
+ *
+ * This component serves as the central hub for scribes to manage their volunteer activities,
+ * register for the platform, and participate in the AI-powered matching system. It provides
+ * tools for profile management, availability tracking, and real-time matching with students
+ * needing examination assistance.
+ *
+ * @component
+ * @param {ScribeDashboardProps} props - Component configuration props
+ * @param {boolean} [props.enableVoiceSupport=true] - Whether to enable voice support features
+ * @param {string} [props.userEmail] - Email of the logged-in user for personalization
+ * @returns {JSX.Element} Complete scribe management interface
+ *
+ * @features
+ * - Scribe registration and profile management
+ * - Real-time student matching with AI algorithms
+ * - Availability scheduling and management
+ * - Voice-enabled interface for accessibility
+ * - Progress tracking and impact metrics
+ * - Administrative tools for coordinators
+ *
+ * @accessibility
+ * - Full keyboard navigation support
+ * - Screen reader optimized with ARIA labels
+ * - Voice interaction through Web Speech API
+ * - High contrast mode support
+ * - Adjustable font sizes and spacing
+ *
+ * @dependencies
+ * - Firebase Authentication for user management
+ * - Firestore for data persistence
+ * - Cerebras AI for intelligent matching
+ * - Zustand stores for state management
  */
 
 'use client'
@@ -34,6 +65,12 @@ import ScribeRegistration from './ScribeRegistration'
 import DynamicScribeMatching from './DynamicScribeMatching'
 import type { ScribeProfile, StudentProfile, ExamRegistration } from '@/types/scribe-system'
 
+/**
+ * Props interface for the ScribeDashboard component
+ * @interface ScribeDashboardProps
+ * @property {boolean} [enableVoiceSupport=true] - Enables voice support features for accessibility
+ * @property {string} [userEmail] - Email address of the logged-in user for personalization
+ */
 interface ScribeDashboardProps {
   enableVoiceSupport?: boolean
   userEmail?: string // Email of the logged-in user

@@ -1,3 +1,37 @@
+/**
+ * StudentDashboard - Main dashboard component for students in the AI Literacy Bridge platform
+ *
+ * This component provides a comprehensive learning interface for visually impaired students,
+ * featuring AI-powered tutoring, voice navigation, scribe matching, and progress tracking.
+ * The dashboard is fully accessible with screen reader support, keyboard navigation,
+ * and voice-first design principles.
+ *
+ * @component
+ * @param {Object} props - Component props (currently none)
+ * @returns {JSX.Element} The student dashboard interface
+ *
+ * @features
+ * - Personalized AI tutoring with Cerebras integration
+ * - Voice-first navigation and interaction
+ * - Real-time scribe matching system
+ * - Progress tracking and gamification
+ * - Accessibility-first design (WCAG 2.1 AA compliant)
+ * - Responsive design for mobile and desktop
+ *
+ * @accessibility
+ * - Full keyboard navigation support
+ * - Screen reader optimized with ARIA labels
+ * - Voice interaction through Web Speech API
+ * - High contrast mode support
+ * - Adjustable font sizes
+ *
+ * @dependencies
+ * - Firebase Authentication for user management
+ * - Zustand stores for state management
+ * - Cerebras AI for intelligent tutoring
+ * - LiveKit for real-time voice communication
+ */
+
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -30,6 +64,15 @@ import { gamificationService } from '@/lib/gamification-service'
 import { UserGamification } from '@/types/scribe-system'
 import { cn } from '@/lib/utils'
 
+/**
+ * Subject interface representing a learning subject in the student's curriculum
+ * @interface Subject
+ * @property {string} id - Unique identifier for the subject
+ * @property {string} name - Display name of the subject
+ * @property {number} progress - Learning progress percentage (0-100)
+ * @property {string[]} topics - Array of topic names within this subject
+ * @property {'beginner' | 'intermediate' | 'advanced'} difficulty - Difficulty level of the subject
+ */
 interface Subject {
   id: string
   name: string
@@ -38,6 +81,11 @@ interface Subject {
   difficulty: 'beginner' | 'intermediate' | 'advanced'
 }
 
+/**
+ * Default subjects available in the student dashboard
+ * These represent core academic subjects with predefined progress and topics
+ * Used when no personalized subjects are available from the backend
+ */
 const DEFAULT_SUBJECTS: Subject[] = [
   {
     id: 'math',
@@ -69,6 +117,15 @@ const DEFAULT_SUBJECTS: Subject[] = [
   }
 ]
 
+/**
+ * StudentDashboard Component - Main learning interface for students
+ *
+ * Renders the complete student dashboard with learning modules, AI tutoring,
+ * scribe matching, and progress tracking. Handles all user interactions and
+ * state management for the learning experience.
+ *
+ * @returns {JSX.Element} Complete dashboard interface
+ */
 export function StudentDashboard() {
   const router = useRouter()
   const { user, logout: storeLogout } = useUserStore()
@@ -160,6 +217,17 @@ export function StudentDashboard() {
     setShowStudyAssistant(false)
   }
 
+  /**
+   * Handles user logout process
+   *
+   * Performs a complete logout sequence including:
+   * - Firebase authentication logout
+   * - Zustand store cleanup
+   * - Local/session storage clearing
+   * - Page redirect to home
+   *
+   * Includes comprehensive error handling and logging for debugging
+   */
   const handleLogout = async () => {
     console.log('Logout button clicked')
     try {

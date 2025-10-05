@@ -1,3 +1,36 @@
+/**
+ * InteractiveDemo - Automated demonstration component for AI Literacy Bridge features
+ *
+ * This component provides an engaging, hands-free demonstration of the platform's
+ * key features through an auto-playing carousel. Designed specifically for accessibility,
+ * it showcases AI-powered scribe matching, voice learning, and accessibility features
+ * without requiring user interaction.
+ *
+ * @component
+ * @param {Object} props - Component props (currently none)
+ * @returns {JSX.Element} Auto-playing demo carousel
+ *
+ * @features
+ * - Auto-advancing carousel (4-second intervals)
+ * - Voice-first design with audio descriptions
+ * - Accessibility-optimized with screen reader support
+ * - Responsive design for all devices
+ * - Smooth animations and transitions
+ *
+ * @accessibility
+ * - ARIA labels and live regions for screen readers
+ * - Keyboard navigation support
+ * - High contrast color schemes
+ * - Reduced motion respect
+ * - Voice announcements for step changes
+ *
+ * @behavior
+ * - Automatically cycles through demo steps every 4 seconds
+ * - Pauses on user interaction (hover/focus)
+ * - Resumes autoplay after interaction timeout
+ * - Provides visual progress indicators
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -16,6 +49,16 @@ import {
   Zap
 } from 'lucide-react'
 
+/**
+ * DemoStep interface representing a single step in the interactive demonstration
+ * @interface DemoStep
+ * @property {string} id - Unique identifier for the demo step
+ * @property {string} title - Display title for the step
+ * @property {string} description - Detailed description of the feature
+ * @property {React.ReactNode} icon - Icon component representing the feature
+ * @property {string[]} features - Array of key features for this step
+ * @property {string} color - Tailwind CSS gradient classes for styling
+ */
 interface DemoStep {
   id: string
   title: string
@@ -25,6 +68,10 @@ interface DemoStep {
   color: string
 }
 
+/**
+ * Predefined demonstration steps showcasing key platform features
+ * Each step highlights a major capability of the AI Literacy Bridge platform
+ */
 const demoSteps: DemoStep[] = [
   {
     id: 'matching',
@@ -60,13 +107,25 @@ const demoSteps: DemoStep[] = [
   }
 ]
 
+/**
+ * InteractiveDemo Component - Auto-playing feature demonstration
+ *
+ * Renders an interactive carousel that automatically cycles through key platform
+ * features. Includes progress indicators and manual navigation options while
+ * maintaining accessibility standards.
+ *
+ * @returns {JSX.Element} Interactive demo carousel with auto-play functionality
+ */
 export default function InteractiveDemo() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
   const currentDemo = demoSteps[currentStep]
 
-  // Auto-advance through demo steps every 4 seconds
+  /**
+   * Auto-advances through demo steps every 4 seconds when autoplay is enabled
+   * Cleans up interval on component unmount or when autoplay is disabled
+   */
   useEffect(() => {
     if (!isAutoPlaying) return
 
@@ -77,6 +136,12 @@ export default function InteractiveDemo() {
     return () => clearInterval(interval)
   }, [isAutoPlaying])
 
+  /**
+   * Handles manual navigation to a specific demo step
+   * Pauses autoplay when user interacts with the carousel
+   *
+   * @param {number} index - The index of the demo step to navigate to
+   */
   const handleStepClick = (index: number) => {
     setCurrentStep(index)
     setIsAutoPlaying(false) // Pause autoplay when user manually navigates

@@ -177,6 +177,160 @@ src/
 └── hooks/              # Custom React hooks
 ```
 
+## 📚 API Documentation
+
+### Core Components
+
+#### `StudentDashboard`
+**Location:** `src/components/StudentDashboard.tsx`
+
+Main learning interface for students featuring AI tutoring, progress tracking, and scribe matching.
+
+**Key Features:**
+- AI-powered conversational learning with Cerebras integration
+- Real-time scribe matching system
+- Progress tracking with gamification
+- Voice-first accessibility design
+- Multi-language support
+
+**Props:** None (uses global state management)
+
+**Accessibility:** WCAG 2.1 AA compliant with full keyboard navigation
+
+#### `ScribeDashboard`
+**Location:** `src/components/ScribeDashboard.tsx`
+
+Comprehensive dashboard for scribe volunteers managing registration, availability, and student matching.
+
+**Props:**
+```typescript
+interface ScribeDashboardProps {
+  enableVoiceSupport?: boolean  // Default: true
+  userEmail?: string           // For personalization
+}
+```
+
+**Key Features:**
+- Scribe registration and profile management
+- AI-powered student matching algorithms
+- Availability scheduling
+- Voice-enabled interface
+- Administrative tools for coordinators
+
+#### `InteractiveDemo`
+**Location:** `src/components/InteractiveDemo.tsx`
+
+Auto-playing carousel demonstrating platform features with accessibility-first design.
+
+**Key Features:**
+- 4-second auto-advancing carousel
+- Voice announcements for screen readers
+- Manual navigation with pause functionality
+- Responsive design for all devices
+- High contrast and keyboard accessible
+
+#### `AITutorChat`
+**Location:** `src/components/AITutorChat.tsx`
+
+Cerebras-powered conversational AI tutor with long-term memory and multi-language support.
+
+**Integration:**
+- Uses Cerebras Wafer-Scale Engine for fast inference
+- Maintains conversation context across sessions
+- Supports 12+ Indian languages
+- Voice input/output capabilities
+
+### Core Services
+
+#### Firebase Authentication
+**Location:** `src/lib/firebase-auth-provider.tsx`
+
+Handles user authentication, registration, and session management.
+
+**Key Methods:**
+```typescript
+interface FirebaseAuthContext {
+  user: User | null
+  login: (email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
+  register: (email: string, password: string, role: UserRole) => Promise<void>
+}
+```
+
+#### Cerebras AI Integration
+**Location:** `src/lib/cerebras.ts`
+
+Manages AI model interactions for tutoring, matching, and content generation.
+
+**Configuration:**
+```typescript
+interface CerebrasConfig {
+  apiKey: string
+  endpoint: string
+  model: string  // llama3.1-8b
+}
+```
+
+#### Scribe Matching Engine
+**Location:** `src/lib/scribe-matching-engine.ts`
+
+AI-powered algorithm for matching students with qualified scribes based on multiple factors.
+
+**Matching Criteria:**
+- Subject expertise alignment
+- Geographic proximity
+- Language compatibility
+- Availability scheduling
+- Experience level matching
+
+### State Management
+
+#### Zustand Stores
+**Location:** `src/store/index.ts`
+
+Global state management using Zustand for user sessions, learning progress, and accessibility preferences.
+
+**Available Stores:**
+- `useUserStore` - User authentication and profile data
+- `useLearningStore` - Learning sessions and AI memory
+- `useScribeStore` - Scribe matching and availability
+- `useAccessibilityStore` - Accessibility preferences and settings
+
+### Type Definitions
+
+#### Core Types
+**Location:** `src/types/index.ts` and `src/types/scribe-system.ts`
+
+Comprehensive TypeScript definitions for the entire application.
+
+**Key Interfaces:**
+```typescript
+interface User {
+  id: string
+  email: string
+  role: 'student' | 'scribe' | 'teacher' | 'admin'
+  profile: UserProfile
+}
+
+interface ScribeProfile {
+  id: string
+  subjects: string[]
+  languages: string[]
+  experience: number
+  availability: AvailabilitySchedule
+  certifications: string[]
+}
+
+interface StudentProfile {
+  id: string
+  grade: string
+  subjects: string[]
+  disabilityInfo: DisabilityInfo
+  location: Location
+  examHistory: ExamRecord[]
+}
+```
+
 ## 🎨 Design Philosophy
 
 ### Accessibility First
