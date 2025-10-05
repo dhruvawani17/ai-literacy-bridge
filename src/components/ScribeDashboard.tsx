@@ -212,7 +212,7 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
   const handleLogout = async () => {
     try {
       await logout()
-      router.push('/auth')
+      router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
     }
