@@ -29,6 +29,7 @@ import {
   LogOut
 } from 'lucide-react'
 import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
+import { useUserStore } from '@/store'
 import ScribeRegistration from './ScribeRegistration'
 import DynamicScribeMatching from './DynamicScribeMatching'
 import type { ScribeProfile, StudentProfile, ExamRegistration } from '@/types/scribe-system'
@@ -41,6 +42,7 @@ interface ScribeDashboardProps {
 export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: ScribeDashboardProps) {
   const router = useRouter()
   const { logout } = useFirebaseAuth()
+  const { logout: storeLogout } = useUserStore()
   const [currentView, setCurrentView] = useState<'dashboard' | 'registration' | 'matching'>('dashboard')
   const [registeredScribes, setRegisteredScribes] = useState<ScribeProfile[]>([])
   const [registeredStudents, setRegisteredStudents] = useState<StudentProfile[]>([])
@@ -210,11 +212,34 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
   }
 
   const handleLogout = async () => {
+    console.log('Logout button clicked in ScribeDashboard')
     try {
+      console.log('Attempting to logout...')
+      
+      // First try Firebase logout
       await logout()
-      router.push('/')
+      console.log('Firebase logout successful')
+      
+      // Clear store state
+      storeLogout()
+      console.log('Store logout successful')
+      
+      // Clear any local state/storage
+      localStorage.clear()
+      sessionStorage.clear()
+      console.log('Local storage cleared')
+      
+      console.log('Redirecting to home page...')
+      // Force a page reload to ensure clean state
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout error:', error)
+      
+      // Even if Firebase logout fails, clear local state and redirect
+      storeLogout()
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/'
     }
   }
 
@@ -312,9 +337,14 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
             <Button 
               variant="destructive" 
               size="sm" 
-              onClick={handleLogout}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleLogout()
+              }}
               className="flex items-center gap-2"
               title="Logout"
+              type="button"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>

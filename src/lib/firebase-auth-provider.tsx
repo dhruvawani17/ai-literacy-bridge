@@ -133,13 +133,24 @@ export default function FirebaseAuthProvider({ children }: { children: ReactNode
   };
 
   const logout = async () => {
+    console.log('Firebase logout function called')
     try {
       if (!auth) {
+        console.error('Firebase auth not initialized')
         throw new Error('Firebase auth not initialized');
       }
+      
+      console.log('Calling Firebase signOut...')
       await signOut(auth);
+      console.log('Firebase signOut completed successfully')
+      
+      // Clear local app state
+      setUser(null);
+      setAppUser(null);
+      
     } catch (error) {
       console.error('Logout error:', error);
+      throw error; // Re-throw so the component can handle it
     }
   };
 

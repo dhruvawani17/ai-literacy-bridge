@@ -71,7 +71,7 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 export function StudentDashboard() {
   const router = useRouter()
-  const { user } = useUserStore()
+  const { user, logout: storeLogout } = useUserStore()
   const { sessions, currentSession, startSession, aiMemory } = useLearningStore()
   const { upcomingSessions } = useScribeStore()
   const { accessibilityPreferences } = useAccessibilityStore()
@@ -161,11 +161,34 @@ export function StudentDashboard() {
   }
 
   const handleLogout = async () => {
+    console.log('Logout button clicked')
     try {
+      console.log('Attempting to logout...')
+      
+      // First try Firebase logout
       await logout()
-      router.push('/')
+      console.log('Firebase logout successful')
+      
+      // Clear store state
+      storeLogout()
+      console.log('Store logout successful')
+      
+      // Clear any local state/storage
+      localStorage.clear()
+      sessionStorage.clear()
+      console.log('Local storage cleared')
+      
+      console.log('Redirecting to home page...')
+      // Force a page reload to ensure clean state
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout error:', error)
+      
+      // Even if Firebase logout fails, clear local state and redirect
+      storeLogout()
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/'
     }
   }
 
@@ -304,9 +327,14 @@ export function StudentDashboard() {
             <Button 
               variant="destructive" 
               size="sm" 
-              onClick={handleLogout}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleLogout()
+              }}
               className="flex items-center gap-2"
               title="Logout"
+              type="button"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>
