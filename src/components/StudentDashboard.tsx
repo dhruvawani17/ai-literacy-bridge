@@ -15,9 +15,11 @@ import {
   Settings,
   Calendar,
   Award,
-  Target
+  Target,
+  LogOut
 } from 'lucide-react'
 import { useUserStore, useLearningStore, useScribeStore, useAccessibilityStore } from '@/store'
+import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
 import { AITutorChat } from './AITutorChat'
 import { AIVoiceTutor } from './AIVoiceTutor'
 import { LiveKitVoiceTutor } from './LiveKitVoiceTutor'
@@ -73,6 +75,7 @@ export function StudentDashboard() {
   const { sessions, currentSession, startSession, aiMemory } = useLearningStore()
   const { upcomingSessions } = useScribeStore()
   const { accessibilityPreferences } = useAccessibilityStore()
+  const { logout } = useFirebaseAuth()
   
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
@@ -157,6 +160,15 @@ export function StudentDashboard() {
     setShowStudyAssistant(false)
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/auth')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500'
     if (progress >= 60) return 'bg-blue-500'
@@ -204,7 +216,7 @@ export function StudentDashboard() {
               Back to Dashboard
             </Button>
           </div>
-          <p className="text-gray-600 mt-2">
+          <p className="text-muted-foreground mt-2">
             Talk naturally with your AI tutor using voice commands
           </p>
         </div>
@@ -223,7 +235,7 @@ export function StudentDashboard() {
               Back to Dashboard
             </Button>
           </div>
-          <p className="text-gray-600 mt-2">
+          <p className="text-muted-foreground mt-2">
             Real-time voice interaction with low-latency AI tutoring
           </p>
         </div>
@@ -265,10 +277,10 @@ export function StudentDashboard() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold text-foreground">
               Welcome back, {user?.name || 'Student'}! 
             </h1>
-                        <p className="text-gray-600 mt-2">
+            <p className="text-muted-foreground mt-2">
               Your personalized AI learning companion powered by Direct Llama
             </p>
           </div>
@@ -286,8 +298,18 @@ export function StudentDashboard() {
                 Voice
               </Badge>
             )}
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" title="Settings">
               <Settings className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </div>
@@ -295,11 +317,11 @@ export function StudentDashboard() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card rounded-lg p-6 shadow-sm border">
+        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Overall Progress</p>
-              <p className="text-2xl font-bold">{Math.round(totalProgress)}%</p>
+              <p className="text-sm text-muted-foreground">Overall Progress</p>
+              <p className="text-2xl font-bold text-foreground">{Math.round(totalProgress)}%</p>
             </div>
             <TrendingUp className="h-8 w-8 text-green-500" />
           </div>
@@ -311,11 +333,11 @@ export function StudentDashboard() {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6 shadow-sm border">
+        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Sessions Today</p>
-              <p className="text-2xl font-bold">{sessions.filter(s => 
+              <p className="text-sm text-muted-foreground">Sessions Today</p>
+              <p className="text-2xl font-bold text-foreground">{sessions.filter(s => 
                 new Date(s.startTime).toDateString() === new Date().toDateString()
               ).length}</p>
             </div>
@@ -323,21 +345,21 @@ export function StudentDashboard() {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6 shadow-sm border">
+        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Upcoming Scribe Sessions</p>
-              <p className="text-2xl font-bold">{upcomingSessions.length}</p>
+              <p className="text-sm text-muted-foreground">Upcoming Scribe Sessions</p>
+              <p className="text-2xl font-bold text-foreground">{upcomingSessions.length}</p>
             </div>
             <Users className="h-8 w-8 text-purple-500" />
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6 shadow-sm border">
+        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Achievements</p>
-              <p className="text-2xl font-bold">{userGamification?.achievements.length || 0}</p>
+              <p className="text-sm text-muted-foreground">Achievements</p>
+              <p className="text-2xl font-bold text-foreground">{userGamification?.achievements.length || 0}</p>
             </div>
             <Award className="h-8 w-8 text-yellow-500" />
           </div>
@@ -365,7 +387,7 @@ export function StudentDashboard() {
                   </div>
                   
                   <div className="mb-4">
-                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <div className="flex justify-between text-sm text-muted-foreground mb-1">
                       <span>Progress</span>
                       <span>{subject.progress}%</span>
                     </div>
@@ -381,7 +403,7 @@ export function StudentDashboard() {
                   </div>
                   
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Topics:</p>
+                    <p className="text-sm font-medium text-card-foreground">Topics:</p>
                     <div className="flex flex-wrap gap-1">
                       {subject.topics.slice(0, 3).map((topic) => (
                         <div key={topic} className="flex gap-1">
@@ -429,7 +451,7 @@ export function StudentDashboard() {
             {aiMemory ? (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Strengths</p>
+                  <p className="text-sm font-medium text-card-foreground">Strengths</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {aiMemory.studentStrengths.slice(0, 3).map((strength, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
@@ -440,7 +462,7 @@ export function StudentDashboard() {
                 </div>
                 
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Focus Areas</p>
+                  <p className="text-sm font-medium text-card-foreground">Focus Areas</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {aiMemory.weaknesses.slice(0, 3).map((weakness, idx) => (
                       <Badge key={idx} variant="outline" className="text-xs">
@@ -451,8 +473,8 @@ export function StudentDashboard() {
                 </div>
                 
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Learning Style</p>
-                  <p className="text-sm mt-1">{aiMemory.preferredExplanationStyle || 'Discovering...'}</p>
+                  <p className="text-sm font-medium text-card-foreground">Learning Style</p>
+                  <p className="text-sm mt-1 text-muted-foreground">{aiMemory.preferredExplanationStyle || 'Discovering...'}</p>
                 </div>
               </div>
             ) : (

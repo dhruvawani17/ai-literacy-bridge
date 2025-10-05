@@ -25,8 +25,10 @@ import {
   UserCheck,
   Award,
   Clock,
-  MapPin
+  MapPin,
+  LogOut
 } from 'lucide-react'
+import { useFirebaseAuth } from '@/lib/firebase-auth-provider'
 import ScribeRegistration from './ScribeRegistration'
 import DynamicScribeMatching from './DynamicScribeMatching'
 import type { ScribeProfile, StudentProfile, ExamRegistration } from '@/types/scribe-system'
@@ -38,6 +40,7 @@ interface ScribeDashboardProps {
 
 export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: ScribeDashboardProps) {
   const router = useRouter()
+  const { logout } = useFirebaseAuth()
   const [currentView, setCurrentView] = useState<'dashboard' | 'registration' | 'matching'>('dashboard')
   const [registeredScribes, setRegisteredScribes] = useState<ScribeProfile[]>([])
   const [registeredStudents, setRegisteredStudents] = useState<StudentProfile[]>([])
@@ -206,6 +209,15 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/auth')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
   const speakText = (text: string) => {
     if (enableVoiceSupport && window.speechSynthesis) {
       const utterance = new SpeechSynthesisUtterance(text)
@@ -231,7 +243,7 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
           <Button
             onClick={() => setCurrentView('dashboard')}
             variant="outline"
-            className="mb-6 text-black font-semibold"
+            className="mb-6 font-semibold"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -252,7 +264,7 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
           <Button
             onClick={() => setCurrentView('dashboard')}
             variant="outline"
-            className="mb-6 text-black font-semibold"
+            className="mb-6 font-semibold"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -274,8 +286,8 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-purple-800">Platform Dashboard</h1>
-            <p className="text-blue-800 font-medium text-lg">Overview of registrations and platform activity</p>
+            <h1 className="text-3xl font-bold text-foreground">Platform Dashboard</h1>
+            <p className="text-muted-foreground font-medium text-lg">Overview of registrations and platform activity</p>
           </div>
           <div className="flex gap-4">
             {/* Voice Support Controls */}
@@ -293,52 +305,62 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
             <Button
               onClick={() => router.push('/')}
               variant="outline"
-              className="border-2 border-gray-600 text-black hover:bg-gray-100 font-semibold"
+              className="font-semibold"
             >
               ← Back to Home
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg">
+          <Card className="p-6 border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-800 font-semibold">Total Students</p>
-                <p className="text-4xl font-bold text-blue-700">{platformStats.totalStudents}</p>
+                <p className="text-blue-800 dark:text-blue-200 font-semibold">Total Students</p>
+                <p className="text-4xl font-bold text-blue-700 dark:text-blue-300">{platformStats.totalStudents}</p>
               </div>
-              <Users className="h-12 w-12 text-blue-600" />
+              <Users className="h-12 w-12 text-blue-600 dark:text-blue-400" />
             </div>
           </Card>
 
-          <Card className="p-6 border-2 border-green-300 bg-gradient-to-br from-green-50 to-green-100 shadow-lg">
+          <Card className="p-6 border-2 border-green-300 dark:border-green-700 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-800 font-semibold">Volunteer Scribes</p>
-                <p className="text-4xl font-bold text-green-700">{platformStats.totalScribes}</p>
+                <p className="text-green-800 dark:text-green-200 font-semibold">Volunteer Scribes</p>
+                <p className="text-4xl font-bold text-green-700 dark:text-green-300">{platformStats.totalScribes}</p>
               </div>
-              <Heart className="h-12 w-12 text-green-600" />
+              <Heart className="h-12 w-12 text-green-600 dark:text-green-400" />
             </div>
           </Card>
 
-          <Card className="p-6 border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg">
+          <Card className="p-6 border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-800 font-semibold">Verified Scribes</p>
-                <p className="text-4xl font-bold text-purple-700">{platformStats.verifiedScribes}</p>
+                <p className="text-purple-800 dark:text-purple-200 font-semibold">Verified Scribes</p>
+                <p className="text-4xl font-bold text-purple-700 dark:text-purple-300">{platformStats.verifiedScribes}</p>
               </div>
-              <CheckCircle className="h-12 w-12 text-purple-600" />
+              <CheckCircle className="h-12 w-12 text-purple-600 dark:text-purple-400" />
             </div>
           </Card>
 
-          <Card className="p-6 border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100 shadow-lg">
+          <Card className="p-6 border-2 border-yellow-300 dark:border-yellow-700 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-yellow-800 font-semibold">Platform Rating</p>
-                <p className="text-4xl font-bold text-yellow-700">{platformStats.platformRating}</p>
+                <p className="text-yellow-800 dark:text-yellow-200 font-semibold">Platform Rating</p>
+                <p className="text-4xl font-bold text-yellow-700 dark:text-yellow-300">{platformStats.platformRating}</p>
               </div>
-              <Star className="h-12 w-12 text-yellow-600" />
+              <Star className="h-12 w-12 text-yellow-600 dark:text-yellow-400" />
             </div>
           </Card>
         </div>
@@ -392,7 +414,7 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
             </CardHeader>
             <CardContent>
               <div className="text-center space-y-4">
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Join our community and help students with disabilities succeed in their exams
                 </p>
                 <div className="flex justify-center gap-4">
@@ -423,28 +445,28 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
 
         {/* Personal Profile Section for Current Student */}
         {userType === 'student' && currentStudent && (
-          <Card className="mb-8 border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <Card className="mb-8 border-2 border-blue-500 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600" />
+                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Your Profile - {currentStudent.personalInfo.name}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-blue-800 mb-2">Personal Information</h4>
-                  <p className="text-sm text-blue-700">Email: {currentStudent.personalInfo.email}</p>
-                  <p className="text-sm text-blue-700">Phone: {currentStudent.personalInfo.phone}</p>
-                  <p className="text-sm text-blue-700">Location: {currentStudent.location.city}, {currentStudent.location.state}</p>
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Personal Information</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Email: {currentStudent.personalInfo.email}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Phone: {currentStudent.personalInfo.phone}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Location: {currentStudent.location.city}, {currentStudent.location.state}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-blue-800 mb-2">Academic Details</h4>
-                  <p className="text-sm text-blue-700">Institution: {currentStudent.academic.institution}</p>
-                  <p className="text-sm text-blue-700">Course: {currentStudent.academic.course}</p>
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Academic Details</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Institution: {currentStudent.academic.institution}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Course: {currentStudent.academic.course}</p>
                   <div className="flex gap-1 mt-2">
                     {currentStudent.academic.preferredSubjects.slice(0, 3).map(subject => (
-                      <Badge key={subject} variant="outline" className="text-xs bg-blue-100 border-blue-300 text-blue-700">
+                      <Badge key={subject} variant="outline" className="text-xs bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300">
                         {subject}
                       </Badge>
                     ))}
@@ -539,9 +561,9 @@ export function ScribeDashboard({ enableVoiceSupport = true, userEmail }: Scribe
             <CardContent>
               {registeredScribes.length === 0 ? (
                 <div className="text-center py-8">
-                  <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg mb-2">No volunteers registered yet</p>
-                  <p className="text-gray-400 text-sm">
+                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground text-lg mb-2">No volunteers registered yet</p>
+                  <p className="text-muted-foreground text-sm">
                     Be the first to register and start making a difference!
                   </p>
                   {userType !== 'student' && (
